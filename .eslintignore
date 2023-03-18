@@ -1,0 +1,8 @@
+{
+    "ignorePatterns": [
+        "**/*.json",
+        "**/*.css",
+        "src/App.test.tsx",
+        "src/reportWebVitals.ts"
+    ]
+}
