@@ -5,9 +5,10 @@ import './App.scss';
 import Form from './components/form/form';
 import rootStore from './mobX';
 import { checkWinner } from './Utils/winnerCheck';
+import { Bot } from './mobX/botStore';
 
 const App: React.FC = observer(() => {
-  const { formStore: { isStarted, opponents, name }, dataStore } = rootStore;
+  const { formStore: { isStarted, opponents, name }, dataStore, gameStore } = rootStore;
 
   useEffect(() => {
     dataStore.fetch();
@@ -26,8 +27,16 @@ const App: React.FC = observer(() => {
   //   { value: "3", suit: "DIAMONDS" },
   //   { value: "8", suit: "SPADES" },
   //   { value: "9", suit: "SPADES" }]));
-  let test = mobx.toJS(dataStore.arrayOfPlayers);
-  console.log(checkWinner(test), mobx.toJS(dataStore.arrayOfPlayers));
+  // let test = mobx.toJS(dataStore.arrayOfPlayers);
+
+  // console.log(dataStore.playersWithCards);
+
+  // useEffect(() => {
+  //   gameStore.addPlayers();
+
+  // }, [isStarted])
+
+  console.log(gameStore.players, gameStore.bank, dataStore.cards);
 
 
 
@@ -35,22 +44,33 @@ const App: React.FC = observer(() => {
   return (
     <div className="App">
       {!isStarted ? <Form /> :
-        <>
+        <div className='test_container'>
           <span>Hello {name}!</span>
-          <span>Your have {opponents} opponents</span>
+          <span>You have {opponents} opponents</span>
           <div>
-            random cards:
-            {dataStore.cards.length &&
-              <>
-                <img src={dataStore.cards[0].images.png} alt="" />
-                <img src={dataStore.cards[1].images.png} alt="" />
-                <img src={dataStore.cards[2].images.png} alt="" />
-              </>
+            {dataStore.cardsForPlay.length &&
+              <div>
+                <img src={dataStore.cardsForPlay[0].image} alt="" />
+                <img src={dataStore.cardsForPlay[1].image} alt="" />
+                <img src={dataStore.cardsForPlay[2].image} alt="" />
+              </div>
             }
-            <button type='button' onClick={() => dataStore.changeBool()}>CLICK IT AND SHUFFLE</button>
+            <button type='button' onClick={() => dataStore.handIncrement()}>CLICK IT AND SHUFFLE</button>
             {/* test for cards shuffling with mobX */}
           </div>
-        </>
+          <div>
+            {gameStore.players.length &&
+              gameStore.players.map((item, index) => <div key={index}>
+                <p>{item.name}</p>
+                <p>stack: {item.stack}</p>
+                {item.bigBlind ? <p>Big-Blind</p> : item.smallBlind ? <p>Small-Blind</p> : null}
+                {item.isDiller && <p>Diller</p>}
+                <img src={item.hand[0]?.image} alt="" />
+                <img src={item.hand[1]?.image} alt="" />
+              </div>)
+            }
+          </div>
+        </div>
       }
     </div>
   );

@@ -24,9 +24,8 @@ export function checkCombination(cards: IHand[]): ICombination {
   const isOnePair = checkIdentical(values, "value", 2);
   const isHighCard = [values[0]];
 
-  const fiveCards = (arr: valueNumber[]) => arr.concat(values.filter(item => !arr.includes(item)).slice(0, 5 - arr.length)); //kicker 5-arr.length if we need 5 cards and not kicker
-  // kicker could be from board in one pair, two pairs, and so on. concat with arr if we need whole 5 cards comb
-
+  const fiveCards = (arr: valueNumber[]) => arr.concat(values.filter(item => !arr.includes(item)).slice(0, 5 - arr.length)); // for kicker, 5-arr.length if we need 5 cards comb
+  // kicker could be from board in one pair, two pairs, and so on. concat with arr if we need whole 5 cards comb and not only possible kicker cards.
 
   if (isFlushRoyale) {
     return { combination: RoyalFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush };
@@ -36,37 +35,30 @@ export function checkCombination(cards: IHand[]): ICombination {
     return { combination: StraightFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush };
   }
 
-  // Check for four of a kind
   if (isFourOfAKind) {
     return { combination: FourofaKind, bestHand: isFourOfAKind, fiveCards: fiveCards(isFourOfAKind) };
   }
 
-  // Check for full house
   if (isFullHouse) {
     return { combination: FullHouse, bestHand: isFullHouse, fiveCards: isFullHouse };
   }
 
-  // Check for flush
   if (isFlush) {
     return { combination: Flush, bestHand: isFlush, fiveCards: isFlush };
   }
 
-  // Check for straight
   if (isStraight) {
     return { combination: Straight, bestHand: isStraight, fiveCards: isStraight };
   }
 
-  // Check for three of a kind
   if (isThreeOfAKind) {
     return { combination: ThreeofaKind, bestHand: isThreeOfAKind, fiveCards: fiveCards(isThreeOfAKind) };
   }
 
-  // Check for two pairs
   if (isTwoPairs) {
     return { combination: TwoPair, bestHand: isTwoPairs, fiveCards: fiveCards(isTwoPairs) };
   }
 
-  // Check for one pair
   if (isOnePair) {
     return { combination: OnePair, bestHand: isOnePair, fiveCards: fiveCards(isOnePair) };
   }
@@ -85,9 +77,10 @@ function checkIdentical<T extends keyof IHand>(arr: valueNumber[], option: T, nu
   }
 
   return false;
-}
+} // checks identical cards by suit or value. 
+// first arg for an array (need to use values for value checks and suits for flush), second - property which should be checked, third - number of same values/suits.
 
-function checkFullHouseOrTwoPairs(arr: valueNumber[], num = 2) {
+function checkFullHouseOrTwoPairs(arr: valueNumber[], num: 2 | 3 = 2) {
   let countSuits: valueNumber[] = [];
   const isSet = checkIdentical(arr, "value", num);
   if (isSet) {
@@ -100,7 +93,8 @@ function checkFullHouseOrTwoPairs(arr: valueNumber[], num = 2) {
     }
   }
   return false;
-}
+} // first checks for identical values by default 2 values (for two pairs), for full house we can set this arg to 3.
+// than if we found in hand 3 or 2 same values we will continue checking and do the same thing to check if we have in hand one more pair.
 
 function checkStraight(arr: valueNumber[]) {
   const isAce = arr.some(item => item.value === 14);
@@ -114,7 +108,9 @@ function checkStraight(arr: valueNumber[]) {
   }
 
   return false;
-}
+} // if we have in our potential combination card with value 14 (ACE) we will check for possible low straight, but firstly we will check for higher straight,
+// if we have higher straight we don't need to check low straight. Ace will have value 14 by default, and only in we would have low straight thatn it will be converted to value 1.
+
 
 function straightLoop(arr: valueNumber[]) {
   let countSuits = [arr[0]];
@@ -123,7 +119,7 @@ function straightLoop(arr: valueNumber[]) {
     if (countSuits.length === 5) return countSuits;
     if (arr[i].value !== arr[i + 1].value + 1 && arr[i].value !== arr[i + 1].value) countSuits = [arr[i + 1]];
   }
-}
+} // loop for straight, uses only value checking unlike to straight flush loop.
 
 function checkStraightFlush(arr: valueNumber[]) {
   const isAce = arr.some(item => item.value === 14);
@@ -137,7 +133,7 @@ function checkStraightFlush(arr: valueNumber[]) {
   }
 
   return false;
-}
+} // needs to be used with suits value sorted array to check the suits and values correctly. 
 
 function straightFlushLoop(arr: valueNumber[]) {
   let countSuits = [arr[0]];
@@ -146,6 +142,6 @@ function straightFlushLoop(arr: valueNumber[]) {
     if (countSuits.length === 5) return countSuits;
     if (arr[i].value !== arr[i + 1].value + 1 || arr[i].suit !== arr[i + 1].suit) countSuits = [arr[i + 1]];
   }
-}
+} // checks values like previous straight functions, but also checks that suits are same.
 
 

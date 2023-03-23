@@ -4,7 +4,7 @@ import rootStore from "../../mobX";
 import './form.scss';
 
 const Form: React.FC = observer(() => {
-  const { formStore: { changeName, name, start, opponents, chooseOpponents } } = rootStore;
+  const { formStore: { changeName, name, start, opponents, chooseOpponents, playerBank, chooseBank } } = rootStore;
 
   return (
     <div className="form">
@@ -18,6 +18,16 @@ const Form: React.FC = observer(() => {
           required={true}
           value={name}
           onChange={(e) => changeName(e)}
+        />
+        <label htmlFor="players_bank">Select players stack: {playerBank}$</label>
+        <input
+          id="players_bank"
+          placeholder="Anonymous"
+          type="range"
+          min={'100'}
+          max={'10000'}
+          value={playerBank}
+          onChange={(e) => chooseBank(e)}
         />
         <label htmlFor="players_number">Number of opponents:</label>
         <select

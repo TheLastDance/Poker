@@ -1,15 +1,18 @@
 import { makeAutoObservable, action } from "mobx";
+import { IFormStore } from "../types";
 
-class Form {
+class Form implements IFormStore {
   isStarted = false;
   name = "";
-  opponents = "1";
+  opponents = "2";
+  playerBank = "100";
 
   constructor() {
     makeAutoObservable(this, {
       changeName: action.bound,
       start: action.bound,
       chooseOpponents: action.bound,
+      chooseBank: action.bound,
     });
   }
 
@@ -24,6 +27,10 @@ class Form {
 
   chooseOpponents(e: React.ChangeEvent<HTMLSelectElement>) {
     this.opponents = e.target.value;
+  }
+
+  chooseBank(e: React.ChangeEvent<HTMLInputElement>) {
+    this.playerBank = e.target.value;
   }
 
 }

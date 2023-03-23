@@ -1,5 +1,4 @@
-import { ICombination } from "../types";
-import { CombinationEnum } from "../types";
+import { ICombination, CombinationEnum } from "../types";
 
 const { RoyalFlush, HighCard, Flush, FullHouse, FourofaKind, ThreeofaKind, TwoPair, Straight, StraightFlush, OnePair } = CombinationEnum;
 
@@ -45,7 +44,7 @@ function highHand(arr: ICombination[], option: "bestHand" | "fiveCards", index =
   console.log(sortByHigh);
 
   let filterHigh = sortByHigh.filter(item => item[option][index].value === sortByHigh[0][option][index].value);
-  // leaves only those players who have high hand, works perfectly for 5 card combination and soarting with 0 index
+  // leaves only those players who have high hand, works perfectly for 5 card combination and sorting with 0 index
   // for checking kickers also works great, but need to be used inside loop to check every possible kicker step by step
 
   return filterHigh;
