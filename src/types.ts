@@ -74,12 +74,20 @@ export interface IBot {
   hand: ICardsForPlay[];
   name: string;
   stack: number;
+  bet: number;
   bigBlind: boolean;
   smallBlind: boolean;
   isDiller: boolean;
+  isMoving: boolean;
+  turn: string | false;
+  isBot: boolean;
+  id: number;
   dataStore: IDataStore;
   formStore: IFormStore;
-  get randomName(): string;
+  clearStates: () => void;
+  cardDistribution: () => void;
+  winner: () => void;
+  ai: () => void;
 }
 
 export interface IGameStore {
@@ -87,7 +95,8 @@ export interface IGameStore {
   bigBlindCost: number;
   smallBlindCost: number;
   bank: number;
-  isRunning: boolean;
+  round: string;
+  maxBet: number;
   formStore: IFormStore;
   dataStore: IDataStore;
 }

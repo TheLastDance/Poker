@@ -1,11 +1,13 @@
 import * as mobx from 'mobx';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import './App.scss';
 import Form from './components/form/form';
 import rootStore from './mobX';
 import { checkWinner } from './Utils/winnerCheck';
 import { Bot } from './mobX/botStore';
+import { Player } from './mobX/playerStore';
+import PlayersTurn from './components/playersTurn/playersTurn';
 
 const App: React.FC = observer(() => {
   const { formStore: { isStarted, opponents, name }, dataStore, gameStore } = rootStore;
@@ -35,10 +37,8 @@ const App: React.FC = observer(() => {
   //   gameStore.addPlayers();
 
   // }, [isStarted])
-
-  console.log(gameStore.players, gameStore.bank, dataStore.cards);
-
-
+  // const player = new Player();
+  console.log(gameStore.players, gameStore.bank, gameStore.maxBet, dataStore.cardsForPlay, dataStore.cards);
 
 
   return (
@@ -64,7 +64,11 @@ const App: React.FC = observer(() => {
                 <p>{item.name}</p>
                 <p>stack: {item.stack}</p>
                 {item.bigBlind ? <p>Big-Blind</p> : item.smallBlind ? <p>Small-Blind</p> : null}
-                {item.isDiller && <p>Diller</p>}
+                {item.bet !== 0 && <p>Bet: {item.bet}</p>}
+                {item.isDiller && <p>Dealer</p>}
+                {item.isMoving && <p>IS MOVING-TRUE</p>}
+                {item.turn && <p>{item.turn}</p>}
+                {!item.isBot && item.isMoving && <PlayersTurn item={item} />}
                 <img src={item.hand[0]?.image} alt="" />
                 <img src={item.hand[1]?.image} alt="" />
               </div>)

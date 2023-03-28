@@ -1,4 +1,3 @@
-import { makeAutoObservable, reaction } from "mobx";
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
@@ -6,67 +5,78 @@ import { ICardsForPlay, IFormStore, IDataStore, IGameStore, IBot } from "../type
 
 let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];
 
-
 export class Bot implements IBot {
   hand: ICardsForPlay[] = [];
-  name = this.randomName;
+  name: string;
   stack = 0;
+  bet = 0;
   bigBlind = false;
   smallBlind = false;
   isDiller = false;
+  isMoving = false;
+  turn: string | false = false;
+  isBot = true;
+  id = 0;
   dataStore: IDataStore;
   formStore: IFormStore;
-  gameStore: IGameStore;
+  maxBet: number;
+  // private random = 0.1;
 
   constructor() {
-    makeAutoObservable(this);
     this.dataStore = dataStore;
     this.formStore = formStore;
-    this.gameStore = gameStore;
+    this.maxBet = gameStore.maxBet;
     this.hand = this.dataStore.selectCards();
     this.stack = +this.formStore.playerBank;
-    reaction(
-      () => this.gameStore.isRunning,
-      () => {
-        this.payForBigBlind();
-        this.payForSmallBlind();
-      }
-    ); // for first hand
-    reaction(
-      () => this.bigBlind,
-      () => {
-        this.payForBigBlind();
-      }
-    );
-    reaction(
-      () => this.smallBlind,
-      () => {
-        this.payForSmallBlind();
-      }
-    );
-    reaction(
-      () => this.dataStore.handsCount,
-      () => {
-        this.hand = this.dataStore.selectCards();
-      } // takes cards
-    );
+    this.name = this.randomName;
   }
 
-  payForBigBlind(): void {
-    if (this.bigBlind) {
-      this.stack -= this.gameStore.bigBlindCost;
-      this.gameStore.bank += this.gameStore.bigBlindCost;
+  clearStates(): void {
+    this.bet = 0;
+    this.isMoving = false;
+    this.turn = false;
+  }
+
+  cardDistribution(): void {
+    this.hand = this.dataStore.selectCards();
+  }
+
+  winner(): void {
+    this.stack += gameStore.bank;
+    //handsCount++ and clearstates
+  }
+
+  ai(): void {
+    const random = Math.random(); // change to Math.random() then
+    // better to make a getter function with returns
+
+    if (random < 0.2) {
+      this.turn = "fold";
+      return;
+    }
+    else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
+      this.turn = "call";
+      this.stack -= gameStore.maxBet - this.bet;
+      gameStore.bank += gameStore.maxBet - this.bet;
+      this.bet += gameStore.maxBet - this.bet;
+      return;
+    }
+    else if (random >= 0.5 && this.bet === gameStore.maxBet) {
+      this.turn = "check";
+      return;
+    } else if (this.turn !== "raise") {
+      this.turn = "raise";
+      this.bet = this.bet + gameStore.maxBet * 2;
+      this.stack -= gameStore.maxBet * 2;
+      gameStore.bank += gameStore.maxBet * 2;
+      gameStore.maxBet = this.bet;
+      return;
+    } else {
+      this.turn = "fold";
     }
   }
 
-  payForSmallBlind(): void {
-    if (this.smallBlind) {
-      this.stack -= this.gameStore.smallBlindCost;
-      this.gameStore.bank += this.gameStore.smallBlindCost;
-    }
-  } // small/big blinds calculation functions should separate functions, because after big blind always comes small and it will cause small blind calculation twice.
-
-  get randomName(): string {
+  private get randomName(): string {
     const index: number = Math.floor(Math.random() * botNames.length);
     const name: string = botNames[index];
     botNames.splice(index, 1);

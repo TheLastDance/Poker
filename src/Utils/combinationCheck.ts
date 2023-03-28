@@ -2,6 +2,8 @@ import { IHand, ICombination, valueNumber, CombinationEnum } from "../types";
 
 const { RoyalFlush, HighCard, Flush, FullHouse, FourofaKind, ThreeofaKind, TwoPair, Straight, StraightFlush, OnePair } = CombinationEnum;
 
+// This function is going to take as an argument a concatenated array of players hand and a board
+// With this function we can check a combination at any time, at pre-flop, flop, turn or river. It will be useful for Bot AI.
 export function checkCombination(cards: IHand[]): ICombination {
   const values = cards.map(card => ({ ...card, value: Number(card.value) })).sort((a, b) => b.value - a.value);
   const suits = [...values].sort((a, b) => a.suit === b.suit ? 0 : a.suit < b.suit ? -1 : 1); // should be used where we need check by suit (flush/straight flush)
