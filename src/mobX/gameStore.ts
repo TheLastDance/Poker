@@ -2,7 +2,7 @@ import { makeAutoObservable, reaction, action, observable } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
-import { IFormStore, IDataStore, IBot, IGameStore } from "../types";
+import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay } from "../types";
 import { Player } from "./playerStore";
 import { handleTurn, allFold, sameBids } from "./utilsForStore";
 
@@ -15,6 +15,7 @@ class Game implements IGameStore {
   bank = 0;
   round = "pre-flop";
   maxBet = this.bigBlindCost;
+  board: ICardsForPlay[] = [];
   formStore: IFormStore;
   dataStore: IDataStore;
 
@@ -23,6 +24,7 @@ class Game implements IGameStore {
       handleCall: action.bound,
       handleCheck: action.bound,
       handleFold: action.bound,
+      handleRaise: action.bound,
     });
     this.formStore = formStore;
     this.dataStore = dataStore;
@@ -31,7 +33,7 @@ class Game implements IGameStore {
       () => {
         this.addPlayers();
         this.blind();
-        this.makeMove2();
+        this.decision();
       }
     );
     reaction(
@@ -41,23 +43,61 @@ class Game implements IGameStore {
       }
     );
     reaction(
+      () => this.round,
+      (round) => {
+        if (round === "flop") {
+          this.maxBet = 0;
+          this.clearPlayerStates();
+          this.board = [this.dataStore.cardsForPlay[0], this.dataStore.cardsForPlay[1], this.dataStore.cardsForPlay[2]];
+          this.makeMove();
+          this.decision();
+        }
+        if (round === "turn") {
+          this.maxBet = 0;
+          this.clearPlayerStates();
+          this.board = [
+            this.dataStore.cardsForPlay[0],
+            this.dataStore.cardsForPlay[1],
+            this.dataStore.cardsForPlay[2],
+            this.dataStore.cardsForPlay[3]];
+          this.makeMove();
+          this.decision();
+        }
+        if (round === 'river') {
+          this.maxBet = 0;
+          this.clearPlayerStates();
+          this.board = [
+            this.dataStore.cardsForPlay[0],
+            this.dataStore.cardsForPlay[1],
+            this.dataStore.cardsForPlay[2],
+            this.dataStore.cardsForPlay[3],
+            this.dataStore.cardsForPlay[4]];
+          this.makeMove();
+          this.decision();
+        }
+        if (round === "finish") {
+          this.makeMove();
+          this.dataStore.handsCount++;
+        }
+      }
+    );
+    reaction(
       () => this.dataStore.handsCount,
       () => {
-        this.clearStoreStates();
         this.clearPlayerStates();
+        this.clearStoreStates();
         this.blindRising();
         this.blind();
         this.cardDistribution();
-        this.makeMove2();
-
-        // clear function for store
+        this.decision();
       }
     );
   }
 
   handleCall() {
     this.players = handleTurn(this.players, "call");
-    // this.bank += this.maxBet;
+    const player = this.players[0];
+    player.callCalculation();
     this.decision();
   }
 
@@ -71,9 +111,17 @@ class Game implements IGameStore {
     this.decision();
   }
 
+  handleRaise() {
+    this.players = handleTurn(this.players, "raise");
+    const player = this.players[0];
+    player.raiseCalculation();
+    this.decision();
+  } // for raise opportunity, will make soon, for now we are able just to call/fold and check.
+
   private clearStoreStates() {
     this.bank = 0;
     this.round = "pre-flop";
+    this.board = [];
     this.maxBet = this.bigBlindCost;
   }
 
@@ -121,15 +169,6 @@ class Game implements IGameStore {
     }
   } // need to make reaction on this, each time when round changes
 
-  private makeMove2() {
-    // let arr = this.players.filter(item => item.turn !== "fold"); // check this
-
-    if (this.round === "pre-flop") {
-      this.decision();
-      //let arr = this.players.filter(item => item.turn !== "fold" && item.bet !== this.maxBet);
-    }
-  }
-
   private decision() {
     let counter = 0;
     while (counter < this.players.length) {
@@ -137,34 +176,52 @@ class Game implements IGameStore {
       const index2 = this.players.findIndex(item => item.isMoving); // finds who was moving before
       const player = this.players[index2];
       const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
+
       if (player.turn !== "fold") {
         const isWinnerByAllFold = allFold(this.players);
 
         if (isWinnerByAllFold) {
           player.isMoving = false;
+          this.round = "finish" // check this part (!!!)
           return;
         } // if everyone folded, give bank to last person who remained
 
         if (player.isBot && shouldMoveExp) {
           player.ai();
+          // here should be animation of bot movement in future I think.
         } // bot generates decision.
       }
 
       if (this.round === "pre-flop" && player.bigBlind) {
         const isSame = sameBids(this.players);
         if (isSame) {
-          if (player.isBot) player.isMoving = false;
+          console.log("because of tie bets");
+
+          if (player.turn) {
+            player.isMoving = false;
+            this.round = "flop";
+          }
+
           return;
         }
-      }
+      } // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
+      // if all persons who are not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
+      // until all persons will fold instead of last one, or until there will be same bets.
 
       if (this.round !== "pre-flop" && player.isDiller) {
         const isSame = sameBids(this.players);
         if (isSame) {
-          if (player.isBot) player.isMoving = false;
+
+          if (player.turn) {
+            player.isMoving = false;
+            const rounds = ["pre-flop", "flop", "turn", "river", "finish"];
+            const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
+            this.round = rounds[indexOfCurrentRound + 1];
+          }
+
           return;
         }
-      }
+      } // same as above one, but works for next rounds where last decision maker will be dealer (button).
 
       const shouldRenderButtons = !player.isBot && player.turn === "fold" || !player.isBot && !shouldMoveExp;
 
@@ -173,7 +230,7 @@ class Game implements IGameStore {
         this.circleIteration(index2, "isMoving");
       } else {
         return;
-      }
+      } // should over recursion if real player did not folded yet.
 
       counter++;
     }

@@ -1,7 +1,8 @@
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
-import { ICardsForPlay, IFormStore, IDataStore, IGameStore, IBot } from "../types";
+import { ICardsForPlay, IFormStore, IDataStore, IGameStore, IBot, ICombination } from "../types";
+import { checkCombination } from "../Utils/combinationCheck";
 
 let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];
 
@@ -34,7 +35,10 @@ export class Bot implements IBot {
   clearStates(): void {
     this.bet = 0;
     this.isMoving = false;
-    this.turn = false;
+
+    if (this.turn !== "fold" && gameStore.round !== "pre-flop") {
+      this.turn = false;
+    } // could be a bug here, need to check whats happening (!!!)
   }
 
   cardDistribution(): void {
@@ -44,6 +48,13 @@ export class Bot implements IBot {
   winner(): void {
     this.stack += gameStore.bank;
     //handsCount++ and clearstates
+  }
+
+  combination(): ICombination {
+    const board = gameStore.board;
+
+    return checkCombination(board.concat(this.hand));
+
   }
 
   ai(): void {
@@ -56,9 +67,7 @@ export class Bot implements IBot {
     }
     else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
       this.turn = "call";
-      this.stack -= gameStore.maxBet - this.bet;
-      gameStore.bank += gameStore.maxBet - this.bet;
-      this.bet += gameStore.maxBet - this.bet;
+      this.callCalculation();
       return;
     }
     else if (random >= 0.5 && this.bet === gameStore.maxBet) {
@@ -66,14 +75,24 @@ export class Bot implements IBot {
       return;
     } else if (this.turn !== "raise") {
       this.turn = "raise";
-      this.bet = this.bet + gameStore.maxBet * 2;
-      this.stack -= gameStore.maxBet * 2;
-      gameStore.bank += gameStore.maxBet * 2;
-      gameStore.maxBet = this.bet;
+      this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
       return;
     } else {
       this.turn = "fold";
     }
+  }
+
+  callCalculation() {
+    this.stack -= gameStore.maxBet - this.bet;
+    gameStore.bank += gameStore.maxBet - this.bet;
+    this.bet += gameStore.maxBet - this.bet;
+  }
+
+  raiseCalculation() {
+    this.bet = this.bet + gameStore.maxBet * 2;
+    this.stack -= gameStore.maxBet * 2;
+    gameStore.bank += gameStore.maxBet * 2;
+    gameStore.maxBet = this.bet;
   }
 
   private get randomName(): string {

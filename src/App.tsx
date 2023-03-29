@@ -50,13 +50,16 @@ const App: React.FC = observer(() => {
           <div>
             {dataStore.cardsForPlay.length &&
               <div>
-                <img src={dataStore.cardsForPlay[0].image} alt="" />
-                <img src={dataStore.cardsForPlay[1].image} alt="" />
-                <img src={dataStore.cardsForPlay[2].image} alt="" />
+                {gameStore.board.map((item, index) => <img key={index} src={item.image} alt="" />)}
               </div>
             }
             <button type='button' onClick={() => dataStore.handIncrement()}>CLICK IT AND SHUFFLE</button>
             {/* test for cards shuffling with mobX */}
+          </div>
+          <div className='stats'>
+            <p>BANK: {gameStore.bank}</p>
+            <p>ROUND: {gameStore.round}</p>
+            <p>Hands was played: {dataStore.handsCount}</p>
           </div>
           <div>
             {gameStore.players.length &&

@@ -60,7 +60,7 @@ export interface IDataStore {
 }
 
 export interface IFormStore {
-  isStarted: boolean
+  isStarted: boolean;
   name: string;
   opponents: string;
   playerBank: string;
@@ -88,6 +88,9 @@ export interface IBot {
   cardDistribution: () => void;
   winner: () => void;
   ai: () => void;
+  callCalculation: () => void;
+  raiseCalculation: () => void;
+  combination: () => ICombination;
 }
 
 export interface IGameStore {

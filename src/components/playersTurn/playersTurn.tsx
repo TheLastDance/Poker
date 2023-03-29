@@ -9,14 +9,16 @@ interface IItem {
 
 
 const PlayersTurn: React.FC<IItem> = observer(({ item }) => {
-  const { gameStore: { handleCall, handleCheck, handleFold } } = rootStore;
+  const { gameStore: { handleCall, handleCheck, handleFold, handleRaise } } = rootStore;
+  const { gameStore } = rootStore;
 
   return (
     <div className="turn_buttons">
+      <span>{item.combination().combination}</span>
       <div>
-        <button type="button" onClick={handleCall}>call</button>
         <button type="button" onClick={handleFold}>fold</button>
-        <button type="button" onClick={handleCheck}>check</button>
+        {item.bet === gameStore.maxBet ? <button type="button" onClick={handleCheck}>check</button> :
+          <button type="button" onClick={handleCall}>call</button>}
       </div>
     </div>
   );

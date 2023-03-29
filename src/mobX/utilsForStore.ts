@@ -27,7 +27,7 @@ export function allFold(arr: IBot[]): boolean {
 } // right now will not work on second round of bidding
 
 export function sameBids(arr: IBot[]): boolean {
-  const filterByFold = arr.filter(item => item.turn === "fold");
+  const filterByFold = arr.filter(item => item.turn !== "fold");
   const same = filterByFold.every(item => item.bet === gameStore.maxBet);
 
   return same;
