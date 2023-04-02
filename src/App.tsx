@@ -60,6 +60,7 @@ const App: React.FC = observer(() => {
             <p>BANK: {gameStore.bank}</p>
             <p>ROUND: {gameStore.round}</p>
             <p>Hands was played: {dataStore.handsCount}</p>
+            <p>Your combination: {gameStore.players && gameStore.players[0].combination().combination}</p>
           </div>
           <div>
             {gameStore.players.length &&

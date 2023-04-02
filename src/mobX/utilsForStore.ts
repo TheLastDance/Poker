@@ -18,8 +18,6 @@ export function allFold(arr: IBot[]): boolean {
   const filterByFold = arr.filter(item => item.turn === "fold");
 
   if (filterByFold.length === arr.length - 1) {
-    const winnerIndex = arr.findIndex(item => item.turn !== "fold");
-    arr[winnerIndex].winner();
     return true;
   }
   return false;

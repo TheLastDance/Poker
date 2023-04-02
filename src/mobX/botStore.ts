@@ -20,13 +20,13 @@ export class Bot implements IBot {
   id = 0;
   dataStore: IDataStore;
   formStore: IFormStore;
-  maxBet: number;
+  // maxBet: number;
   // private random = 0.1;
 
   constructor() {
     this.dataStore = dataStore;
     this.formStore = formStore;
-    this.maxBet = gameStore.maxBet;
+    //this.maxBet = gameStore.maxBet;
     this.hand = this.dataStore.selectCards();
     this.stack = +this.formStore.playerBank;
     this.name = this.randomName;
@@ -36,9 +36,11 @@ export class Bot implements IBot {
     this.bet = 0;
     this.isMoving = false;
 
-    if (this.turn !== "fold" && gameStore.round !== "pre-flop") {
+    if (this.turn !== "fold" || gameStore.round === "finish") {
+      console.log("clear turn!!!");
       this.turn = false;
     } // could be a bug here, need to check whats happening (!!!)
+
   }
 
   cardDistribution(): void {
@@ -47,21 +49,23 @@ export class Bot implements IBot {
 
   winner(): void {
     this.stack += gameStore.bank;
-    //handsCount++ and clearstates
+  }
+
+  splitPot(length: number): void {
+    this.stack += gameStore.bank / length;
   }
 
   combination(): ICombination {
     const board = gameStore.board;
 
-    return checkCombination(board.concat(this.hand));
-
+    return checkCombination(board.concat(this.hand), this.id);
   }
 
   ai(): void {
-    const random = Math.random(); // change to Math.random() then
+    const random = Math.random();
     // better to make a getter function with returns
 
-    if (random < 0.2) {
+    if (random < 0.8) {
       this.turn = "fold";
       return;
     }
@@ -89,9 +93,15 @@ export class Bot implements IBot {
   }
 
   raiseCalculation() {
-    this.bet = this.bet + gameStore.maxBet * 2;
-    this.stack -= gameStore.maxBet * 2;
-    gameStore.bank += gameStore.maxBet * 2;
+    let raiseBet = gameStore.maxBet;
+
+    if (gameStore.maxBet === 0) {
+      raiseBet = 1; // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
+    }
+
+    this.bet = this.bet + raiseBet * 2;
+    this.stack -= raiseBet * 2;
+    gameStore.bank += raiseBet * 2;
     gameStore.maxBet = this.bet;
   }
 

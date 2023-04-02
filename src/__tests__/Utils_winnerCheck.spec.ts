@@ -133,47 +133,45 @@ let TEST_6_PLAYER_2 = [
 
 
 
-
-
 describe("Testing combinations", () => {
 
   it("split pot with kicker on a board (two pairs)", () => {
-    let players = [checkCombination(TEST_1_PLAYER_1), checkCombination(TEST_1_PLAYER_2), checkCombination(TEST_1_PLAYER_3)];
+    let players = [checkCombination(TEST_1_PLAYER_1, 0), checkCombination(TEST_1_PLAYER_2, 1), checkCombination(TEST_1_PLAYER_3, 2)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[0], players[1], players[2]])
   })
 
   it("royal flush check", () => {
-    let players = [checkCombination(TEST_2_PLAYER_1), checkCombination(TEST_2_PLAYER_2)];
+    let players = [checkCombination(TEST_2_PLAYER_1, 0), checkCombination(TEST_2_PLAYER_2, 1)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[0], players[1]])
   })
 
   it("first player wins with high kicker in hand (set)", () => {
-    let players = [checkCombination(TEST_3_PLAYER_1), checkCombination(TEST_3_PLAYER_2)];
+    let players = [checkCombination(TEST_3_PLAYER_1, 0), checkCombination(TEST_3_PLAYER_2, 1)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[0]]);
   })
 
   it("first player wins with higher straight flush", () => {
-    let players = [checkCombination(TEST_4_PLAYER_1), checkCombination(TEST_4_PLAYER_2)];
+    let players = [checkCombination(TEST_4_PLAYER_1, 0), checkCombination(TEST_4_PLAYER_2, 1)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[0]]);
   })
 
   it("first player wins with higher combination (flush vs straight)", () => {
-    let players = [checkCombination(TEST_5_PLAYER_1), checkCombination(TEST_5_PLAYER_2)];
+    let players = [checkCombination(TEST_5_PLAYER_1, 0), checkCombination(TEST_5_PLAYER_2, 1)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[0]]);
   })
 
   it("second player wins with higher second kicker (High card, 5th card higher)", () => {
-    let players = [checkCombination(TEST_6_PLAYER_1), checkCombination(TEST_6_PLAYER_2)];
+    let players = [checkCombination(TEST_6_PLAYER_1, 0), checkCombination(TEST_6_PLAYER_2, 1)];
     let test = checkWinner(players);
 
     expect(test).toEqual([players[1]]);

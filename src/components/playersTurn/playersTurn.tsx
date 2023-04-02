@@ -14,7 +14,6 @@ const PlayersTurn: React.FC<IItem> = observer(({ item }) => {
 
   return (
     <div className="turn_buttons">
-      <span>{item.combination().combination}</span>
       <div>
         <button type="button" onClick={handleFold}>fold</button>
         {item.bet === gameStore.maxBet ? <button type="button" onClick={handleCheck}>check</button> :

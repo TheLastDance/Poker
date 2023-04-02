@@ -8,6 +8,7 @@ export interface ICombination {
   combination: CombinationEnum;
   bestHand: valueNumber[];
   fiveCards: valueNumber[];
+  id: number;
 }
 
 export type valueNumber = Omit<IHand, "value"> & { value: number; };
@@ -87,6 +88,7 @@ export interface IBot {
   clearStates: () => void;
   cardDistribution: () => void;
   winner: () => void;
+  splitPot: (length: number) => void;
   ai: () => void;
   callCalculation: () => void;
   raiseCalculation: () => void;
