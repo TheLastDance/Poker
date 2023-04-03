@@ -65,7 +65,7 @@ export class Bot implements IBot {
     const random = Math.random();
     // better to make a getter function with returns
 
-    if (random < 0.8) {
+    if (random < 0.2) {
       this.turn = "fold";
       return;
     }

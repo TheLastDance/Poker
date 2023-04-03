@@ -38,7 +38,9 @@ const App: React.FC = observer(() => {
 
   // }, [isStarted])
   // const player = new Player();
-  console.log(gameStore.players, gameStore.bank, gameStore.maxBet, dataStore.cardsForPlay, dataStore.cards);
+  console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
+  console.log(gameStore.round);
+
 
 
   return (

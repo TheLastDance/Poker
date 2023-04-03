@@ -131,6 +131,22 @@ let TEST_6_PLAYER_2 = [
   { value: "14", suit: "DIAMONDS" }
 ];
 
+let TEST_7_PLAYER_1 = [
+  { value: "14", suit: 'DIAMONDS' },
+  { value: "14", suit: 'HEARTS' },
+  { value: "13", suit: 'SPADES' },
+  { value: "11", suit: 'DIAMONDS' },
+  { value: "9", suit: 'DIAMONDS' }
+];
+
+let TEST_7_PLAYER_2 = [
+  { value: "14", suit: 'DIAMONDS' },
+  { value: "14", suit: 'HEARTS' },
+  { value: "13", suit: 'SPADES' },
+  { value: "10", suit: 'HEARTS' },
+  { value: "9", suit: 'DIAMONDS' }
+];
+
 
 
 describe("Testing combinations", () => {
@@ -175,5 +191,12 @@ describe("Testing combinations", () => {
     let test = checkWinner(players);
 
     expect(test).toEqual([players[1]]);
+  })
+
+  it("kicker", () => {
+    let players = [checkCombination(TEST_7_PLAYER_1, 0), checkCombination(TEST_7_PLAYER_2, 1)];
+    let test = checkWinner(players);
+
+    expect(test).toEqual([players[0]]);
   })
 })

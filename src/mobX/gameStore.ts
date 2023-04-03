@@ -53,7 +53,7 @@ export class Game implements IGameStore {
           this.makeMove();
           this.decision();
         }
-        if (round === "turn") {
+        else if (round === "turn") {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = [
@@ -64,7 +64,7 @@ export class Game implements IGameStore {
           this.makeMove();
           this.decision();
         }
-        if (round === 'river') {
+        else if (round === 'river') {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = [
@@ -76,18 +76,12 @@ export class Game implements IGameStore {
           this.makeMove();
           this.decision();
         }
-        if (round === "finish") {
-          this.winnerChecking();
-          this.makeMove();
-          this.dataStore.handsCount++;
-        }
       }
     );
     reaction(
       () => this.dataStore.handsCount,
       () => {
         console.log("was handscount");
-
         this.clearPlayerStates();
         this.clearStoreStates();
         this.blindRising();
@@ -124,9 +118,8 @@ export class Game implements IGameStore {
 
   private clearStoreStates() {
     this.bank = 0;
-    console.log("clear round");
-
     this.round = "pre-flop";
+    console.log("clear round", this.round);
     this.board = [];
     this.maxBet = this.bigBlindCost;
   }
@@ -144,21 +137,16 @@ export class Game implements IGameStore {
   } // will distribute cards for players when the new hand start.
 
   private winnerChecking() {
-    const winnerByFold = allFold(this.players);
-    console.log(winnerByFold);
+    const stayedInGame = this.players.filter(item => item.turn !== "fold").map(item => item.combination());
+    const winners = checkWinner(stayedInGame);
 
-    if (!winnerByFold) {
-      const stayedInGame = this.players.filter(item => item.turn !== "fold").map(item => item.combination());
-      const winners = checkWinner(stayedInGame);
-
-      if (winners.length === 1) {
-        const index = this.players.findIndex(item => item.id === winners[0].id);
-        this.players[index].winner();
-      } else {
-        for (const player of winners) {
-          const indexOfWinnerID = this.players.findIndex(item => item.id === player.id);
-          this.players[indexOfWinnerID].splitPot(winners.length);
-        }
+    if (winners.length === 1) {
+      const index = this.players.findIndex(item => item.id === winners[0].id);
+      this.players[index].winner();
+    } else {
+      for (const player of winners) {
+        const indexOfWinnerID = this.players.findIndex(item => item.id === player.id);
+        this.players[indexOfWinnerID].splitPot(winners.length);
       }
     }
   }
@@ -181,44 +169,63 @@ export class Game implements IGameStore {
 
 
   private makeMove() { // initializes player who will move first in that round
-    const lastIsMoving = this.players.findIndex(item => item.isMoving);
+    //const lastIsMoving = this.players.findIndex(item => item.isMoving);
     if (this.round === "pre-flop") {
       const index = this.players.findIndex(item => item.bigBlind);
-
-      if (lastIsMoving !== -1) this.players[lastIsMoving].isMoving = false; // clear from last hand
       this.circleIteration(index, "isMoving");
 
     } else {
       console.log("was in makeMove", this.round);
-      const index = this.players.findIndex(item => item.smallBlind);
-      if (lastIsMoving !== -1) this.players[lastIsMoving].isMoving = false;
-      this.players[index].isMoving = true;
+      if (this.players.length === 2) {
+        const indexBig = this.players.findIndex(item => item.bigBlind);
+        this.players[indexBig].isMoving = true;
+      } else {
+        const indexSmall = this.players.findIndex(item => item.smallBlind);
+        this.players[indexSmall].isMoving = true;
+      }
     }
   } // need to make reaction on this, each time when round changes
+
+  private winnerByFold(player: IBot) {
+    const winnerIndex = this.players.findIndex(item => item.turn !== "fold");
+    this.players[winnerIndex].winner();
+    player.isMoving = false;
+    console.log(this.round);
+    this.round = "finish";
+    this.dataStore.handsCount++;
+    console.log(this.round);
+  }
 
   private decision() {
     let counter = 0;
     while (counter < this.players.length) {
 
       const index = this.players.findIndex(item => item.isMoving); // finds who was moving before
+      console.log(index);
+
       const player = this.players[index];
       const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
 
-      if (player.turn !== "fold") {
-        const isWinnerByAllFold = allFold(this.players);
+      if (allFold(this.players)) {
+        this.winnerByFold(player);
+        return;
+      }
 
-        if (isWinnerByAllFold) {
-          player.winner();
-          player.isMoving = false;
-          this.round = "finish";
-          return;
-        } // if everyone folded, give bank to last person who remained
+      if (player.turn !== "fold") {
 
         if (player.isBot && shouldMoveExp) {
           player.ai();
           // here should be animation of bot movement in future I think.
         } // bot generates decision.
+
       }
+
+      if (allFold(this.players)) {
+        this.winnerByFold(player);
+        return;
+      } // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
+      // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
+      // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
 
       if (this.round === "pre-flop" && player.bigBlind) {
         const isSame = sameBids(this.players);
@@ -231,7 +238,7 @@ export class Game implements IGameStore {
           return;
         }
       } // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
-      // if all persons who are not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
+      // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
       // until all persons will fold instead of last one, or until there will be same bets.
 
       if (this.round !== "pre-flop" && player.isDiller) {
@@ -243,6 +250,12 @@ export class Game implements IGameStore {
             const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
             const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
             this.round = rounds[indexOfCurrentRound + 1];
+
+            if (this.round === "finish") {
+              this.winnerChecking();
+              this.makeMove();
+              this.dataStore.handsCount++;
+            }
           }
 
           return;
@@ -254,7 +267,10 @@ export class Game implements IGameStore {
       if (player.isBot || shouldRenderButtons) {
         player.isMoving = false;
         this.circleIteration(index, "isMoving");
+        console.log("263");
+
       } else {
+        console.log("269");
         return;
       } // should finish recursion if real player did not folded yet.
 
@@ -262,7 +278,7 @@ export class Game implements IGameStore {
     }
 
     this.decision(); // recursion, which can't be infinitive in future, because player won't be possible to raise more than he have, so one return will be reached.
-  }// for now it's working, but have an error in console because of possible infinitive loop. But no crushes and so on. Will fix it.
+  }
 
   private circleIteration(index: number, prop: BooleanKeysOfIBot) {
     if (index === this.players.length - 1) {
