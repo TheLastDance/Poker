@@ -92,6 +92,7 @@ export interface IBot {
   ai: () => void;
   callCalculation: () => void;
   raiseCalculation: () => void;
+  blindsCalculation: () => void;
   combination: () => ICombination;
 }
 

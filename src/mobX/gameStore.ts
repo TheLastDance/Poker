@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction, action, observable } from "mobx";
+import { makeAutoObservable, reaction, action } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
@@ -38,41 +38,26 @@ export class Game implements IGameStore {
       }
     );
     reaction(
-      () => this.bigBlindCost,
-      () => {
-        this.maxBet = this.bigBlindCost;
-      }
-    );
-    reaction(
       () => this.round,
       (round) => {
         if (round === "flop") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = [this.dataStore.cardsForPlay[0], this.dataStore.cardsForPlay[1], this.dataStore.cardsForPlay[2]];
+          this.board = this.dataStore.cardsForPlay.slice(0, 3);
           this.makeMove();
           this.decision();
         }
         else if (round === "turn") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = [
-            this.dataStore.cardsForPlay[0],
-            this.dataStore.cardsForPlay[1],
-            this.dataStore.cardsForPlay[2],
-            this.dataStore.cardsForPlay[3]];
+          this.board = this.dataStore.cardsForPlay.slice(0, 4);
           this.makeMove();
           this.decision();
         }
         else if (round === 'river') {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = [
-            this.dataStore.cardsForPlay[0],
-            this.dataStore.cardsForPlay[1],
-            this.dataStore.cardsForPlay[2],
-            this.dataStore.cardsForPlay[3],
-            this.dataStore.cardsForPlay[4]];
+          this.board = this.dataStore.cardsForPlay.slice(0, 5);
           this.makeMove();
           this.decision();
         }
@@ -164,12 +149,11 @@ export class Game implements IGameStore {
     if (this.dataStore.handsCount % 10 === 0) {
       this.bigBlindCost = this.bigBlindCost * 2;
       this.smallBlindCost = this.smallBlindCost * 2;
+      this.maxBet = this.bigBlindCost;
     }
   } // will rise blinds after each 10 hands
 
-
-  private makeMove() { // initializes player who will move first in that round
-    //const lastIsMoving = this.players.findIndex(item => item.isMoving);
+  private makeMove() {
     if (this.round === "pre-flop") {
       const index = this.players.findIndex(item => item.bigBlind);
       this.circleIteration(index, "isMoving");
@@ -184,7 +168,7 @@ export class Game implements IGameStore {
         this.players[indexSmall].isMoving = true;
       }
     }
-  } // need to make reaction on this, each time when round changes
+  } // initializes player who will move first in that round
 
   private winnerByFold(player: IBot) {
     const winnerIndex = this.players.findIndex(item => item.turn !== "fold");
@@ -199,10 +183,8 @@ export class Game implements IGameStore {
   private decision() {
     let counter = 0;
     while (counter < this.players.length) {
-
       const index = this.players.findIndex(item => item.isMoving); // finds who was moving before
       console.log(index);
-
       const player = this.players[index];
       const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
 
@@ -212,39 +194,34 @@ export class Game implements IGameStore {
       }
 
       if (player.turn !== "fold") {
-
         if (player.isBot && shouldMoveExp) {
           player.ai();
+          console.log(player.turn);
           // here should be animation of bot movement in future I think.
         } // bot generates decision.
-
       }
 
-      if (allFold(this.players)) {
-        this.winnerByFold(player);
-        return;
-      } // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
-      // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
-      // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
+      if (allFold(this.players)) { // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
+        this.winnerByFold(player); // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
+        return;                    // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
+      }
 
       if (this.round === "pre-flop" && player.bigBlind) {
         const isSame = sameBids(this.players);
-        if (isSame) {
 
-          if (player.turn) {
-            player.isMoving = false;
+        if (isSame) {                // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
+          if (player.turn) {         // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
+            player.isMoving = false; // until all persons will fold except last one, or until there will be same bets.
             this.round = "flop";
           }
           return;
         }
-      } // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
-      // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
-      // until all persons will fold instead of last one, or until there will be same bets.
+      }
 
       if (this.round !== "pre-flop" && player.isDiller) {
         const isSame = sameBids(this.players);
-        if (isSame) {
 
+        if (isSame) {
           if (player.turn) {
             player.isMoving = false;
             const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
@@ -253,11 +230,9 @@ export class Game implements IGameStore {
 
             if (this.round === "finish") {
               this.winnerChecking();
-              this.makeMove();
               this.dataStore.handsCount++;
             }
           }
-
           return;
         }
       } // same as above one, but works for next rounds where last decision maker will be dealer (button).
@@ -273,10 +248,8 @@ export class Game implements IGameStore {
         console.log("269");
         return;
       } // should finish recursion if real player did not folded yet.
-
       counter++;
     }
-
     this.decision(); // recursion, which can't be infinitive in future, because player won't be possible to raise more than he have, so one return will be reached.
   }
 
@@ -288,69 +261,47 @@ export class Game implements IGameStore {
     }
   } // function for circle iteration between players on table.
 
-  private dillerPos(num: number, isFirstHand: boolean) {
-    if (isFirstHand) {
-      if (num === 1) {
-        if (this.players.length === 2) {
-          this.players[0].isDiller = true;
-        } else {
-          this.players[this.players.length - 1].isDiller = true;
-        }
+  private dillerPos(bigBlindIndex: number) {
+    if (bigBlindIndex === 1) {
+      if (this.players.length === 2) {
+        this.players[0].isDiller = true;
       } else {
-        this.players[num - 2].isDiller = true;
+        this.players[this.players.length - 1].isDiller = true;
       }
     } else {
-      const diller = this.players.findIndex(item => item.isDiller);
-      this.players[diller].isDiller = false;
-
-      this.circleIteration(diller, "isDiller");
+      this.players[bigBlindIndex - 2].isDiller = true;
     }
-  } // initializes who is dealer
+  } // initializes who is dealer on first hand, need separate logic because on heads up dealer should be small blind, thats why we check length of the array.
 
-
-  private blindsPos(blindType: 'smallBlind' | 'bigBlind') {
-    const index = this.players.findIndex(item => item[blindType]);
-    this.players[index][blindType] = false;
-
-    this.circleIteration(index, blindType);
+  private rolesPos(type: 'smallBlind' | 'bigBlind' | 'isDiller') {
+    const index = this.players.findIndex(item => item[type]);
+    this.players[index][type] = false;
+    this.circleIteration(index, type);
   } // initializes players on blinds from the second hand.
+  // SHOULD BE VERY CAREFUL HERE WHEN BOT WILL LOSE ALL HIS STACK AND BE DELETED FROM ARRAY(!!!).
 
   private blind() {
     const firstHand = this.players.every(item => !item.bigBlind);
-    const random = Math.floor(Math.random() * (this.players.length - 1)) + 1;
-
-    this.dillerPos(random, firstHand);
 
     if (firstHand) {
+      const random = Math.floor(Math.random() * (this.players.length - 1)) + 1; // randomizes who which index will be BB on first hand.
+      this.dillerPos(random);
       this.players[random].bigBlind = true;
       this.players[random - 1].smallBlind = true;
       // this part initializes who are on blinds at first hand, with random const.
     } else {
-      this.blindsPos('bigBlind');
-      this.blindsPos('smallBlind');
+      this.rolesPos("isDiller");
+      this.rolesPos('bigBlind');
+      this.rolesPos('smallBlind');
     }
 
-    const arr = this.players.map(item => { // will add this functionality to bot class
-      if (item.bigBlind) {
-        item.stack -= this.bigBlindCost;
-        this.bank += this.bigBlindCost;
-        item.bet += this.bigBlindCost;
-        return item;
-      }
-      if (item.smallBlind) {
-        item.stack -= this.smallBlindCost;
-        this.bank += this.smallBlindCost;
-        item.bet += this.smallBlindCost;
-        return item;
-      }
-      return item;
-    }) // counts changes from blinds
+    for (const player of this.players) {
+      player.blindsCalculation();
+    } // calculates blinds
 
-    this.players = arr;
     this.makeMove();
   }
 }
-
 
 const gameStore = new Game();
 export default gameStore;

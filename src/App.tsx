@@ -74,7 +74,7 @@ const App: React.FC = observer(() => {
                 {item.isDiller && <p>Dealer</p>}
                 {item.isMoving && <p>IS MOVING-TRUE</p>}
                 {item.turn && <p>{item.turn}</p>}
-                {!item.isBot && item.isMoving && <PlayersTurn item={item} />}
+                {!item.isBot && item.isMoving && <PlayersTurn item={item} maxBet={gameStore.maxBet} />}
                 <img src={item.hand[0]?.image} alt="" />
                 <img src={item.hand[1]?.image} alt="" />
               </div>)

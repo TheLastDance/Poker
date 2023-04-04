@@ -20,13 +20,11 @@ export class Bot implements IBot {
   id = 0;
   dataStore: IDataStore;
   formStore: IFormStore;
-  // maxBet: number;
   // private random = 0.1;
 
   constructor() {
     this.dataStore = dataStore;
     this.formStore = formStore;
-    //this.maxBet = gameStore.maxBet;
     this.hand = this.dataStore.selectCards();
     this.stack = +this.formStore.playerBank;
     this.name = this.randomName;
@@ -39,8 +37,7 @@ export class Bot implements IBot {
     if (this.turn !== "fold" || gameStore.round === "finish") {
       console.log("clear turn!!!");
       this.turn = false;
-    } // could be a bug here, need to check whats happening (!!!)
-
+    }
   }
 
   cardDistribution(): void {
@@ -57,7 +54,6 @@ export class Bot implements IBot {
 
   combination(): ICombination {
     const board = gameStore.board;
-
     return checkCombination(board.concat(this.hand), this.id);
   }
 
@@ -103,6 +99,19 @@ export class Bot implements IBot {
     this.stack -= raiseBet * 2;
     gameStore.bank += raiseBet * 2;
     gameStore.maxBet = this.bet;
+  }
+
+  blindsCalculation() {
+    if (this.bigBlind) {
+      this.stack -= gameStore.bigBlindCost;
+      gameStore.bank += gameStore.bigBlindCost;
+      this.bet += gameStore.bigBlindCost;
+    }
+    if (this.smallBlind) {
+      this.stack -= gameStore.smallBlindCost;
+      gameStore.bank += gameStore.smallBlindCost;
+      this.bet += gameStore.smallBlindCost;
+    }
   }
 
   private get randomName(): string {
