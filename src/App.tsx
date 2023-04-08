@@ -1,47 +1,28 @@
 import * as mobx from 'mobx';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import './App.scss';
 import Form from './components/form/form';
 import rootStore from './mobX';
-import { checkWinner } from './Utils/winnerCheck';
-import { Bot } from './mobX/botStore';
 import { Player } from './mobX/playerStore';
 import PlayersTurn from './components/playersTurn/playersTurn';
+import { Application } from 'pixi.js';
+import Test from './testPixiComponent';
+import { AppProvider } from "@pixi/react"
+
+const app = new Application();
 
 const App: React.FC = observer(() => {
   const { formStore: { isStarted, opponents, name }, dataStore, gameStore } = rootStore;
+  //console.log(app.view.width);
+
 
   useEffect(() => {
     dataStore.fetch();
     // eslint-disable-next-line
   }, []);
-  // console.log(checkCombination(dataStore.yourCards)); // test
-
-  // console.log(dataStore.cardsForPlay[0]);
-  // test for shuffle
-
-  // console.log(checkCombination([
-  //   { value: "5", suit: "DIAMONDS" },
-  //   { value: "2", suit: "DIAMONDS" },
-  //   { value: "9", suit: "HEARTS" },
-  //   { value: "9", suit: "CLUBS" },
-  //   { value: "3", suit: "DIAMONDS" },
-  //   { value: "8", suit: "SPADES" },
-  //   { value: "9", suit: "SPADES" }]));
-  // let test = mobx.toJS(dataStore.arrayOfPlayers);
-
-  // console.log(dataStore.playersWithCards);
-
-  // useEffect(() => {
-  //   gameStore.addPlayers();
-
-  // }, [isStarted])
-  // const player = new Player();
   console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
   console.log(gameStore.round);
-
-
 
   return (
     <div className="App">
@@ -64,7 +45,7 @@ const App: React.FC = observer(() => {
             <p>Hands was played: {dataStore.handsCount}</p>
             <p>Your combination: {gameStore.players && gameStore.players[0].combination().combination}</p>
           </div>
-          <div>
+          <div style={{ display: "flex", }}>
             {gameStore.players.length &&
               gameStore.players.map((item, index) => <div key={index}>
                 <p>{item.name}</p>
@@ -81,6 +62,9 @@ const App: React.FC = observer(() => {
               </div>)
             }
           </div>
+          <AppProvider value={app}>
+            <Test />
+          </AppProvider>
         </div>
       }
     </div>
