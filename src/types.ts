@@ -96,8 +96,13 @@ export interface IBot {
   combination: () => ICombination;
 }
 
+export interface IPlayer extends IBot {
+  //raiseAmount: string;
+  raiseInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
 export interface IGameStore {
-  players: IBot[];
+  players: IBot[] | IPlayer[];
   bigBlindCost: number;
   smallBlindCost: number;
   bank: number;

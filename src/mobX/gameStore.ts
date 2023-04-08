@@ -2,7 +2,7 @@ import { makeAutoObservable, reaction, action } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
-import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay } from "../types";
+import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer } from "../types";
 import { Player } from "./playerStore";
 import { handleTurn, allFold, sameBids } from "./utilsForStore";
 import { checkWinner } from "../Utils/winnerCheck";
@@ -10,12 +10,13 @@ import { checkWinner } from "../Utils/winnerCheck";
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
 
 export class Game implements IGameStore {
-  players: IBot[] = [];
+  players: IBot[] | IPlayer[] = [];
   bigBlindCost = 2;
   smallBlindCost = 1;
   bank = 0;
   round = "pre-flop";
   maxBet = this.bigBlindCost;
+  playerRaiseAmount = this.maxBet + 1;
   board: ICardsForPlay[] = [];
   formStore: IFormStore;
   dataStore: IDataStore;
@@ -26,9 +27,14 @@ export class Game implements IGameStore {
       handleCheck: action.bound,
       handleFold: action.bound,
       handleRaise: action.bound,
+      handleRaiseInput: action.bound,
     });
     this.formStore = formStore;
     this.dataStore = dataStore;
+    reaction(() => this.maxBet,
+      () => {
+        this.playerRaiseAmount = this.maxBet + 1;
+      })
     reaction(
       () => this.formStore.isStarted,
       () => {
@@ -77,24 +83,28 @@ export class Game implements IGameStore {
     );
   }
 
-  handleCall() {
+  handleCall(): void {
     this.players = handleTurn(this.players, "call");
     const player = this.players[0];
     player.callCalculation();
     this.decision();
   }
 
-  handleFold() {
-    this.players = handleTurn(this.players, "fold")
+  handleFold(): void {
+    this.players = handleTurn(this.players, "fold");
     this.decision();
   }
 
-  handleCheck() {
-    this.players = handleTurn(this.players, "check")
+  handleCheck(): void {
+    this.players = handleTurn(this.players, "check");
     this.decision();
   }
 
-  handleRaise() {
+  handleRaiseInput(e: React.ChangeEvent<HTMLInputElement>): void {
+    if (this.players[0] instanceof Player) this.players[0].raiseInput(e);
+  }
+
+  handleRaise(): void {
     this.players = handleTurn(this.players, "raise");
     const player = this.players[0];
     player.raiseCalculation(); // should be another calculation here, because that one is for bot which can't choose raise with input range.
@@ -137,7 +147,7 @@ export class Game implements IGameStore {
   }
 
   private addPlayers() {
-    const player: IBot = new Player();
+    const player: IPlayer = new Player();
     const bots: IBot[] = new Array(Number(this.formStore.opponents)).fill(0).map(() => new Bot());
     this.players = [player, ...bots].map((item, index) => {
       item.id = index; // adding id's to players.

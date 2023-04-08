@@ -1,7 +1,7 @@
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
-import { ICardsForPlay, IFormStore, IDataStore, IGameStore, IBot, ICombination } from "../types";
+import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination } from "../types";
 import { checkCombination } from "../Utils/combinationCheck";
 
 let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];

@@ -46,7 +46,7 @@ const App: React.FC = observer(() => {
   return (
     <div className="App">
       {!isStarted ? <Form /> :
-        <div className='test_container'>
+        <div className='test_container' style={{ overflowY: 'scroll', height: '100%', }}>
           <span>Hello {name}!</span>
           <span>You have {opponents} opponents</span>
           <div>
@@ -74,7 +74,8 @@ const App: React.FC = observer(() => {
                 {item.isDiller && <p>Dealer</p>}
                 {item.isMoving && <p>IS MOVING-TRUE</p>}
                 {item.turn && <p>{item.turn}</p>}
-                {!item.isBot && item.isMoving && <PlayersTurn item={item} maxBet={gameStore.maxBet} />}
+                {item.isMoving && item instanceof Player &&
+                  <PlayersTurn item={item} maxBet={gameStore.maxBet} playerRaiseAmount={gameStore.playerRaiseAmount} />}
                 <img src={item.hand[0]?.image} alt="" />
                 <img src={item.hand[1]?.image} alt="" />
               </div>)
