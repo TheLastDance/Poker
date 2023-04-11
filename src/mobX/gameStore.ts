@@ -18,6 +18,7 @@ export class Game implements IGameStore {
   maxBet = this.bigBlindCost;
   playerRaiseAmount = this.maxBet + 1;
   board: ICardsForPlay[] = [];
+  isGameOver = false;
   formStore: IFormStore;
   dataStore: IDataStore;
 
@@ -33,7 +34,7 @@ export class Game implements IGameStore {
     this.dataStore = dataStore;
     reaction(() => this.maxBet,
       () => {
-        this.playerRaiseAmount = this.maxBet + 1;
+        this.playerRaiseAmount = this.maxBet - this.players[0].bet + 1; // could be issue
       })
     reaction(
       () => this.formStore.isStarted,
@@ -74,11 +75,11 @@ export class Game implements IGameStore {
       () => {
         console.log("was handscount");
         this.clearPlayerStates();
+        this.blindRising(); // changed
         this.clearStoreStates();
-        this.blindRising();
         this.blind();
         this.cardDistribution();
-        this.decision();
+        if (!this.isGameOver) this.decision();
       }
     );
   }
@@ -290,11 +291,60 @@ export class Game implements IGameStore {
   } // initializes players on blinds from the second hand.
   // SHOULD BE VERY CAREFUL HERE WHEN BOT WILL LOSE ALL HIS STACK AND BE DELETED FROM ARRAY(!!!).
 
+  private deleteLoser() {
+    const noLoser = this.players.every(item => item.stack >= this.bigBlindCost);
+
+    if (noLoser) return;
+
+    for (let i = 0; i < this.players.length; i++) {
+      const player = this.players[i];
+      if (player.stack < this.bigBlindCost) {
+        if (this.players.length === 2) {
+          const remainder = player.stack;
+          this.players.splice(i, 1);
+          this.players[0].stack += remainder + this.bank;
+          this.bank = 0;
+          this.isGameOver = true;
+          return;
+        }
+        if (player.bigBlind || player.isDiller || player.smallBlind) {
+          if (player.isDiller) {
+            if (this.players.length === 3) {
+              this.rolesPos("isDiller");
+            } else {
+              this.rolesPos("isDiller");
+              this.rolesPos("smallBlind");
+              this.rolesPos("bigBlind");
+            }
+          }
+          if (player.smallBlind) {
+            this.rolesPos("smallBlind");
+            this.rolesPos("bigBlind");
+          }
+          if (player.bigBlind) {
+            this.rolesPos("bigBlind");
+          }
+          if (this.players.length === 3 && !player.isDiller) {
+            const smallIndex = this.players.findIndex(item => item.smallBlind);
+            const dillerIndex = this.players.findIndex(item => item.isDiller);
+            this.players[dillerIndex].isDiller = false;
+            this.players[smallIndex].isDiller = true;
+          }
+        }
+        this.bank += player.stack;
+        this.players.splice(i, 1);
+        i--;
+      }
+    }
+
+    this.deleteLoser();
+  }
+
   private blind() {
     const firstHand = this.players.every(item => !item.bigBlind);
 
     if (firstHand) {
-      const random = Math.floor(Math.random() * (this.players.length - 1)) + 1; // randomizes who which index will be BB on first hand.
+      const random = Math.floor(Math.random() * (this.players.length - 1)) + 1; // randomizes which index will be BB on first hand.
       this.dillerPos(random);
       this.players[random].bigBlind = true;
       this.players[random - 1].smallBlind = true;
@@ -304,6 +354,8 @@ export class Game implements IGameStore {
       this.rolesPos('bigBlind');
       this.rolesPos('smallBlind');
     }
+
+    this.deleteLoser();
 
     for (const player of this.players) {
       player.blindsCalculation();

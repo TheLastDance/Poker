@@ -1,5 +1,5 @@
 import * as mobx from 'mobx';
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import './App.scss';
 import Form from './components/form/form';
@@ -22,7 +22,7 @@ const App: React.FC = observer(() => {
     // eslint-disable-next-line
   }, []);
   console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
-  console.log(gameStore.round);
+  console.log(gameStore.players);
 
   return (
     <div className="App">

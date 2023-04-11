@@ -66,7 +66,7 @@ export class Bot implements IBot {
       return;
     }
     else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
-      this.turn = "call";
+      this.turn = "call"; // could call more than have
       this.callCalculation();
       return;
     }
@@ -74,7 +74,6 @@ export class Bot implements IBot {
       this.turn = "check";
       return;
     } else if (this.turn !== "raise") {
-      this.turn = "raise";
       this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
       return;
     } else {
@@ -95,10 +94,15 @@ export class Bot implements IBot {
       raiseBet = 1; // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
     }
 
-    this.bet = this.bet + raiseBet * 2;
-    this.stack -= raiseBet * 2;
-    gameStore.bank += raiseBet * 2;
-    gameStore.maxBet = this.bet;
+    if (raiseBet * 2 <= this.stack) {
+      this.turn = "raise";
+      this.bet = this.bet + raiseBet * 2;
+      this.stack -= raiseBet * 2;
+      gameStore.bank += raiseBet * 2;
+      gameStore.maxBet = this.bet;
+    } else {
+      this.turn = "fold";
+    }
   }
 
   blindsCalculation() {

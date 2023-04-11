@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction, reaction } from "mobx";
 import { ICardsForPlay, IDataStore, IDeck, ICard } from "../types";
 import { shuffle } from "../Utils/shuffleArray";
+import { Assets } from "pixi.js";
 // import { checkCombination } from "../Utils/combinationCheck";
 
 const CARD_VALUES: { [key: string]: string; } = {
@@ -45,16 +46,27 @@ class Data implements IDataStore {
     return value;
   }
 
-  fetch() {
-    fetch('https://deckofcardsapi.com/api/deck/new/draw/?count=52')
-      .then(response => response.json())
-      .then((json: IDeck) => {
-        runInAction(() => {
-          this.cards = json.cards.map((item: ICard) => ({ value: this.changeValue(item.value), suit: item.suit, image: item.image }));
-        })
-      })
-      // eslint-disable-next-line
-      .catch(err => console.log(err))
+  onPropgress(progress: number) {
+    console.log("progress", progress);
+  }
+
+  async fetch() {
+    try {
+      const response = await fetch('https://deckofcardsapi.com/api/deck/new/draw/?count=52');
+      const json = await response.json();
+      runInAction(() => {
+        this.cards = json.cards.map((item: ICard) => ({ value: this.changeValue(item.value), suit: item.suit, image: item.image }));
+      });
+      let arr = [];
+      for (let i = 0; i < this.cards.length; i++) {
+        Assets.add(`${i}`, this.cards[i].image);
+        arr.push(`${i}`);
+      }
+      arr.push("background", "https://cdn.leonardo.ai/users/592f9706-6d24-4367-aed2-7a96c70365b9/generations/3ebcba18-4fc6-4a51-811f-1cede109dcbe/Leonardo_Diffusion_Generate_for_me_poker_table_background_imag_3.jpg");
+      await Assets.load(arr, this.onPropgress); // Preload all textures using pixiJS
+    } catch (err) {
+      console.log(err);
+    }
   } // fetch of experemental api with card deck for testing and rendering cards. 
 
   shuffleArr() {
