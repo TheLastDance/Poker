@@ -3,6 +3,7 @@ import formStore from "./formStore";
 import gameStore from "./gameStore";
 import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination } from "../types";
 import { checkCombination } from "../Utils/combinationCheck";
+import { runInAction } from "mobx";
 
 let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];
 
@@ -20,6 +21,7 @@ export class Bot implements IBot {
   id = 0;
   dataStore: IDataStore;
   formStore: IFormStore;
+  animation = false;
   // private random = 0.1;
 
   constructor() {
@@ -30,14 +32,24 @@ export class Bot implements IBot {
     this.name = this.randomName;
   }
 
-  clearStates(): void {
-    this.bet = 0;
-    this.isMoving = false;
+  runAnimation() {
+    this.animation = true;
+  }
 
-    if (this.turn !== "fold" || gameStore.round === "finish") {
-      console.log("clear turn!!!");
-      this.turn = false;
-    }
+  finishAnimation() {
+    this.animation = false;
+  }
+
+  clearStates(): void {
+    runInAction(() => {
+      this.bet = 0;
+      this.isMoving = false;
+
+      if (this.turn !== "fold" || gameStore.round === "finish") {
+        console.log("clear turn!!!");
+        this.turn = false;
+      }
+    })
   }
 
   cardDistribution(): void {
@@ -58,27 +70,29 @@ export class Bot implements IBot {
   }
 
   ai(): void {
-    const random = Math.random();
-    // better to make a getter function with returns
+    runInAction(() => {
+      const random = Math.random();
+      // better to make a getter function with returns
 
-    if (random < 0.2) {
-      this.turn = "fold";
-      return;
-    }
-    else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
-      this.turn = "call"; // could call more than have
-      this.callCalculation();
-      return;
-    }
-    else if (random >= 0.5 && this.bet === gameStore.maxBet) {
-      this.turn = "check";
-      return;
-    } else if (this.turn !== "raise") {
-      this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
-      return;
-    } else {
-      this.turn = "fold";
-    }
+      if (random < 0.2) {
+        this.turn = "fold";
+        return;
+      }
+      else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
+        this.turn = "call"; // could call more than have
+        this.callCalculation();
+        return;
+      }
+      else if (random >= 0.5 && this.bet === gameStore.maxBet) {
+        this.turn = "check";
+        return;
+      } else if (this.turn !== "raise") {
+        this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
+        return;
+      } else {
+        this.turn = "fold";
+      }
+    })
   }
 
   callCalculation() {

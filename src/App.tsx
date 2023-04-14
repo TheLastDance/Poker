@@ -2,20 +2,19 @@ import * as mobx from 'mobx';
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import './App.scss';
-import Form from './components/form/form';
+import Form from './components/React/form/form';
 import rootStore from './mobX';
 import { Player } from './mobX/playerStore';
-import PlayersTurn from './components/playersTurn/playersTurn';
+import PlayersTurn from './components/React/playersTurn/playersTurn';
 import { Application } from 'pixi.js';
-import Test from './testPixiComponent';
-import { AppProvider } from "@pixi/react"
+import { AppProvider } from "@pixi/react";
+import MainStage from './components/Pixi/Stage';
 
 const app = new Application();
 
 const App: React.FC = observer(() => {
   const { formStore: { isStarted, opponents, name }, dataStore, gameStore } = rootStore;
   //console.log(app.view.width);
-
 
   useEffect(() => {
     dataStore.fetch();
@@ -63,7 +62,7 @@ const App: React.FC = observer(() => {
             }
           </div>
           <AppProvider value={app}>
-            <Test />
+            <MainStage />
           </AppProvider>
         </div>
       }

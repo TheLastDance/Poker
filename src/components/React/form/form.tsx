@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import rootStore from "../../mobX";
+import rootStore from "../../../mobX";
 import './form.scss';
 
 const Form: React.FC = observer(() => {

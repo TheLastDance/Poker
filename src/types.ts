@@ -1,3 +1,11 @@
+import { PixiRef, Container } from "@pixi/react";
+
+export type IContainer = PixiRef<typeof Container>;
+
+export interface IAppSizes {
+  appHeight: number;
+  appWidth: number;
+};
 
 export interface IHand {
   value: string;
@@ -85,6 +93,9 @@ export interface IBot {
   id: number;
   dataStore: IDataStore;
   formStore: IFormStore;
+  animation: boolean;
+  runAnimation: () => void;
+  finishAnimation: () => void;
   clearStates: () => void;
   cardDistribution: () => void;
   winner: () => void;

@@ -1,7 +1,8 @@
 import React from "react";
-import rootStore from "../../mobX";
-import { IPlayer } from "../../types";
-import gameStore from "../../mobX/gameStore";
+import rootStore from "../../../mobX";
+import { IPlayer } from "../../../types";
+import gameStore from "../../../mobX/gameStore";
+import { action } from "mobx";
 
 interface IItem {
   item: IPlayer;
@@ -16,9 +17,9 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
   return (
     <div className="turn_buttons">
       <div>
-        <button type="button" onClick={handleFold}>fold</button>
+        <button type="button" onClick={action(handleFold)}>fold</button>
         {item.bet === maxBet ? <button type="button" onClick={handleCheck}>check</button> :
-          <button type="button" onClick={handleCall}>call</button>}
+          <button type="button" onClick={action(handleCall)}>call</button>}
         {item.stack > gameStore.maxBet + 1 && <> <label htmlFor="raise">{playerRaiseAmount}$</label>
           <input
             id="raise"
@@ -28,7 +29,7 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
             value={playerRaiseAmount}
             onChange={(e) => handleRaiseInput(e)}
           />
-          <button type="button" onClick={handleRaise} >raise</button></>}
+          <button type="button" onClick={action(handleRaise)} >raise</button></>}
       </div>
     </div>
   );
