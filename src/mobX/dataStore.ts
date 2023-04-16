@@ -1,8 +1,8 @@
 import { makeAutoObservable, runInAction, reaction } from "mobx";
-import { ICardsForPlay, IDataStore, IDeck, ICard } from "../types";
+import { ICardsForPlay, IDataStore, ICard } from "../types";
 import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
-// import { checkCombination } from "../Utils/combinationCheck";
+import bg1 from "./../assets/bg1.jpg";
 
 const CARD_VALUES: { [key: string]: string; } = {
   "ACE": "14",
@@ -15,7 +15,7 @@ class Data implements IDataStore {
   cards: ICardsForPlay[] = [];
   cardsForPlay: ICardsForPlay[] = [];
   handsCount = 0;
-  // arrayOfPlayers = [checkCombination(this.yourCards1), checkCombination(this.yourCards2), checkCombination(this.yourCards3)];
+  assetsLoaded = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -46,8 +46,9 @@ class Data implements IDataStore {
     return value;
   }
 
-  onPropgress(progress: number) {
+  onProgress(progress: number): number {
     console.log("progress", progress);
+    return progress;
   }
 
   async fetch() {
@@ -62,10 +63,13 @@ class Data implements IDataStore {
         Assets.add(`${i}`, this.cards[i].image);
         arr.push(`${i}`);
       }
-      arr.push("background", "https://cdn.leonardo.ai/users/592f9706-6d24-4367-aed2-7a96c70365b9/generations/3ebcba18-4fc6-4a51-811f-1cede109dcbe/Leonardo_Diffusion_Generate_for_me_poker_table_background_imag_3.jpg");
-      await Assets.load(arr, this.onPropgress); // Preload all textures using pixiJS
+      Assets.add("background-1", bg1);
+      arr.push("background-1");
+      await Assets.load(arr, this.onProgress); // Preload all textures using pixiJS
     } catch (err) {
       console.log(err);
+    } finally {
+      runInAction(() => { this.assetsLoaded = true; });
     }
   } // fetch of experemental api with card deck for testing and rendering cards. 
 

@@ -21,6 +21,14 @@ export interface ICombination {
 
 export type valueNumber = Omit<IHand, "value"> & { value: number; };
 
+export enum TurnsEnum {
+  fold = "fold",
+  call = "call",
+  check = "check",
+  raise = "raise",
+  allIn = "All-in"
+}
+
 export enum CombinationEnum {
   RoyalFlush = "Royal Flush",
   StraightFlush = "Straight Flush",
@@ -51,18 +59,13 @@ export interface ICard {
   suit: string;
 }
 
-export interface IDeck {
-  success: boolean;
-  cards: ICard[];
-  deck_id: string;
-  remaining: number;
-}
-
 export interface IDataStore {
   cards: ICardsForPlay[];
   cardsForPlay: ICardsForPlay[];
   handsCount: number;
+  assetsLoaded: boolean;
   selectCards(): ICardsForPlay[];
+  onProgress(progress: number): number;
   fetch(): void;
   shuffleArr(): void;
   handIncrement(): void;
@@ -88,7 +91,7 @@ export interface IBot {
   smallBlind: boolean;
   isDiller: boolean;
   isMoving: boolean;
-  turn: string | false;
+  turn: TurnsEnum | false;
   isBot: boolean;
   id: number;
   dataStore: IDataStore;
@@ -102,6 +105,7 @@ export interface IBot {
   splitPot: (length: number) => void;
   ai: () => void;
   callCalculation: () => void;
+  allInCalculation: () => void;
   raiseCalculation: () => void;
   blindsCalculation: () => void;
   combination: () => ICombination;

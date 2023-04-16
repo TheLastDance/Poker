@@ -1,9 +1,11 @@
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
-import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination } from "../types";
+import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum } from "../types";
 import { checkCombination } from "../Utils/combinationCheck";
 import { runInAction } from "mobx";
+
+const { fold, call, check, raise, allIn } = TurnsEnum;
 
 let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];
 
@@ -16,7 +18,7 @@ export class Bot implements IBot {
   smallBlind = false;
   isDiller = false;
   isMoving = false;
-  turn: string | false = false;
+  turn: TurnsEnum | false = false;
   isBot = true;
   id = 0;
   dataStore: IDataStore;
@@ -45,7 +47,7 @@ export class Bot implements IBot {
       this.bet = 0;
       this.isMoving = false;
 
-      if (this.turn !== "fold" || gameStore.round === "finish") {
+      if (this.turn !== fold && this.turn !== allIn || gameStore.round === "finish") {
         console.log("clear turn!!!");
         this.turn = false;
       }
@@ -75,30 +77,41 @@ export class Bot implements IBot {
       // better to make a getter function with returns
 
       if (random < 0.2) {
-        this.turn = "fold";
+        this.turn = fold;
         return;
       }
       else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
-        this.turn = "call"; // could call more than have
         this.callCalculation();
         return;
       }
       else if (random >= 0.5 && this.bet === gameStore.maxBet) {
-        this.turn = "check";
+        this.turn = check;
         return;
-      } else if (this.turn !== "raise") {
+      } else if (this.turn !== raise) {
         this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
         return;
       } else {
-        this.turn = "fold";
+        this.turn = fold;
       }
     })
   }
 
   callCalculation() {
-    this.stack -= gameStore.maxBet - this.bet;
-    gameStore.bank += gameStore.maxBet - this.bet;
-    this.bet += gameStore.maxBet - this.bet;
+    if (gameStore.maxBet < this.stack) {
+      this.turn = call;
+      this.stack -= gameStore.maxBet - this.bet;
+      gameStore.bank += gameStore.maxBet - this.bet;
+      this.bet += gameStore.maxBet - this.bet;
+    } else {
+      this.allInCalculation();
+    }
+  }
+
+  allInCalculation() {
+    this.turn = allIn;
+    gameStore.bank += this.stack;
+    this.bet += this.stack;
+    this.stack = 0;
   }
 
   raiseCalculation() {
@@ -109,13 +122,14 @@ export class Bot implements IBot {
     }
 
     if (raiseBet * 2 <= this.stack) {
-      this.turn = "raise";
+      this.turn = raise;
       this.bet = this.bet + raiseBet * 2;
       this.stack -= raiseBet * 2;
       gameStore.bank += raiseBet * 2;
       gameStore.maxBet = this.bet;
     } else {
-      this.turn = "fold";
+      this.allInCalculation();
+      if (gameStore.maxBet < this.bet) gameStore.maxBet = this.bet;
     }
   }
 

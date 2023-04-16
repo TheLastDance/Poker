@@ -1,6 +1,6 @@
 import React from "react";
 import rootStore from "../../../mobX";
-import { IPlayer } from "../../../types";
+import { IPlayer, TurnsEnum } from "../../../types";
 import gameStore from "../../../mobX/gameStore";
 import { action } from "mobx";
 
@@ -10,17 +10,20 @@ interface IItem {
   playerRaiseAmount: number;
 }
 
+const { allIn } = TurnsEnum;
+
 const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
-  const { gameStore: { handleCall, handleCheck, handleFold, handleRaiseInput, handleRaise } } = rootStore;
+  const { gameStore: { handleCall, handleCheck, handleFold, handleRaiseInput, handleRaise, handleAllIn } } = rootStore;
   console.log(item.bet === maxBet);
 
   return (
     <div className="turn_buttons">
       <div>
         <button type="button" onClick={action(handleFold)}>fold</button>
-        {item.bet === maxBet ? <button type="button" onClick={handleCheck}>check</button> :
-          <button type="button" onClick={action(handleCall)}>call</button>}
-        {item.stack > gameStore.maxBet + 1 && <> <label htmlFor="raise">{playerRaiseAmount}$</label>
+        {item.bet === maxBet && item.turn !== allIn ?
+          <button type="button" onClick={handleCheck}>check</button> :
+          item.stack + item.bet > gameStore.maxBet ? <button type="button" onClick={action(handleCall)}>call</button> : null}
+        {item.stack + item.bet > gameStore.maxBet + 1 ? <> <label htmlFor="raise">{playerRaiseAmount}$</label>
           <input
             id="raise"
             type="range"
@@ -29,7 +32,8 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
             value={playerRaiseAmount}
             onChange={(e) => handleRaiseInput(e)}
           />
-          <button type="button" onClick={action(handleRaise)} >raise</button></>}
+          <button type="button" onClick={action(handleRaise)} >raise</button></> :
+          <button type="button" onClick={handleAllIn}>All-In</button>}
       </div>
     </div>
   );

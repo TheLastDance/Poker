@@ -2,12 +2,13 @@ import { makeAutoObservable, reaction, action, runInAction } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
-import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer } from "../types";
+import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer, TurnsEnum } from "../types";
 import { Player } from "./playerStore";
 import { handleTurn, allFold, sameBids } from "./utilsForStore";
 import { checkWinner } from "../Utils/winnerCheck";
 
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
+const { fold, call, check, raise, allIn } = TurnsEnum;
 
 export class Game implements IGameStore {
   players: IBot[] | IPlayer[] = [];
@@ -27,6 +28,7 @@ export class Game implements IGameStore {
       handleCall: action.bound,
       handleCheck: action.bound,
       handleFold: action.bound,
+      handleAllIn: action.bound,
       handleRaise: action.bound,
       handleRaiseInput: action.bound,
     });
@@ -37,7 +39,7 @@ export class Game implements IGameStore {
         this.playerRaiseAmount = this.maxBet - this.players[0].bet + 1; // could be issue
       })
     reaction(
-      () => this.formStore.isStarted,
+      () => this.formStore.isStarted && this.dataStore.assetsLoaded, // changed it should to be careful, not sure how it works
       () => {
         this.addPlayers();
         this.blind();
@@ -85,19 +87,19 @@ export class Game implements IGameStore {
   }
 
   handleCall(): void {
-    this.players = handleTurn(this.players, "call");
+    this.players = handleTurn(this.players, call);
     const player = this.players[0];
     player.callCalculation();
     this.decision();
   }
 
   handleFold(): void {
-    this.players = handleTurn(this.players, "fold");
+    this.players = handleTurn(this.players, fold);
     this.decision();
   }
 
   handleCheck(): void {
-    this.players = handleTurn(this.players, "check");
+    this.players = handleTurn(this.players, check);
     this.decision();
   }
 
@@ -105,10 +107,21 @@ export class Game implements IGameStore {
     if (this.players[0] instanceof Player) this.players[0].raiseInput(e);
   }
 
+  handleAllIn(): void {
+    this.players = handleTurn(this.players, allIn);
+    const player = this.players[0];
+    player.allInCalculation();
+    this.decision();
+  }
+
   handleRaise(): void {
-    this.players = handleTurn(this.players, "raise");
     const player = this.players[0];
     player.raiseCalculation(); // should be another calculation here, because that one is for bot which can't choose raise with input range.
+    if (player.stack > 0) {
+      this.players = handleTurn(this.players, raise);
+    } else {
+      this.players = handleTurn(this.players, allIn);
+    }
     this.decision();
   } // for raise opportunity, will make soon, for now we are able just to call/fold and check.
 
@@ -133,7 +146,7 @@ export class Game implements IGameStore {
   } // will distribute cards for players when the new hand start.
 
   private winnerChecking() {
-    const stayedInGame = this.players.filter(item => item.turn !== "fold").map(item => item.combination());
+    const stayedInGame = this.players.filter(item => item.turn !== fold).map(item => item.combination());
     const winners = checkWinner(stayedInGame);
 
     if (winners.length === 1) {
@@ -182,7 +195,7 @@ export class Game implements IGameStore {
   } // initializes player who will move first in that round
 
   private winnerByFold(player: IBot) {
-    const winnerIndex = this.players.findIndex(item => item.turn !== "fold");
+    const winnerIndex = this.players.findIndex(item => item.turn !== fold);
     this.players[winnerIndex].winner();
     player.isMoving = false;
     console.log(this.round);
@@ -206,7 +219,7 @@ export class Game implements IGameStore {
           return;
         }
 
-        if (player.turn !== "fold") {
+        if (player.turn !== fold && player.turn !== allIn) {
           if (player.isBot && shouldMoveExp) {
             await new Promise(resolve => setTimeout(() => resolve(player.ai()), 1500)); // react dont want to rerender when state is updated withour ticker.
             //player.ai();
@@ -248,24 +261,23 @@ export class Game implements IGameStore {
               player.isMoving = false;
               const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
               const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
-              this.round = rounds[indexOfCurrentRound + 1]; // MAKE AS ACTION
+              runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
 
               if (this.round === "finish") {
                 await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
-                this.dataStore.handsCount++; // MAKE AS ACTION
+                runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
               }
             }
             return;
           }
         } // same as above one, but works for next rounds where last decision maker will be dealer (button).
 
-        const shouldRenderButtons = !player.isBot && player.turn === "fold" || !player.isBot && !shouldMoveExp;
+        const shouldRenderButtons = !player.isBot && player.turn === fold || !player.isBot && !shouldMoveExp;
 
         if (player.isBot || shouldRenderButtons) {
           this.changeArr(index);
           this.circleIteration(index, "isMoving");
           console.log("263");
-
         } else {
           console.log("269");
           return;

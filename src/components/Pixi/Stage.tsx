@@ -4,12 +4,14 @@ import Board from './Board';
 import Background from './Background';
 import Stats from './Stats';
 import PlayerList from './players/PlayersList';
+import rootStore from '../../mobX';
 //OBSERVER WAS DELETED
 
 const MainStage: React.FC = () => {
   const stageRef = useRef<Stage>(null);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const { dataStore } = rootStore;
 
   useEffect(() => {
     const app: Stage | null = stageRef.current;
@@ -20,13 +22,17 @@ const MainStage: React.FC = () => {
   }, [stageRef]);
 
   return (
-    <Stage ref={stageRef} width={1200} height={700} options={{}}>
+    <Stage ref={stageRef} width={800} height={800} options={{}}>
+      {/* {dataStore.assetsLoaded && <>
+        <Background appWidth={width} appHeight={height} />
+        <PlayerList />
+        <Board appHeight={height} appWidth={width} />
+        <Stats appHeight={height} />
+      </>} */}
       <Background appWidth={width} appHeight={height} />
       <PlayerList />
-
       <Board appHeight={height} appWidth={width} />
       <Stats appHeight={height} />
-
     </Stage>
   );
 }

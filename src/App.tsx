@@ -25,7 +25,8 @@ const App: React.FC = observer(() => {
 
   return (
     <div className="App">
-      {!isStarted ? <Form /> :
+      {!isStarted && <Form />}
+      {dataStore.assetsLoaded && isStarted ?
         <div className='test_container' style={{ overflowY: 'scroll', height: '100%', }}>
           <span>Hello {name}!</span>
           <span>You have {opponents} opponents</span>
@@ -64,8 +65,8 @@ const App: React.FC = observer(() => {
           <AppProvider value={app}>
             <MainStage />
           </AppProvider>
-        </div>
-      }
+        </div> : isStarted ? <h1>LOADING...</h1>
+          : null}
     </div>
   );
 })
