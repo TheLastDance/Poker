@@ -19,10 +19,10 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
   return (
     <div className="turn_buttons">
       <div>
-        <button type="button" onClick={action(handleFold)}>fold</button>
+        <button type="button" onClick={handleFold}>fold</button>
         {item.bet === maxBet && item.turn !== allIn ?
           <button type="button" onClick={handleCheck}>check</button> :
-          item.stack + item.bet > gameStore.maxBet ? <button type="button" onClick={action(handleCall)}>call</button> : null}
+          item.stack + item.bet > gameStore.maxBet ? <button type="button" onClick={handleCall}>call</button> : null}
         {item.stack + item.bet > gameStore.maxBet + 1 ? <> <label htmlFor="raise">{playerRaiseAmount}$</label>
           <input
             id="raise"
@@ -32,7 +32,7 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
             value={playerRaiseAmount}
             onChange={(e) => handleRaiseInput(e)}
           />
-          <button type="button" onClick={action(handleRaise)} >raise</button></> :
+          <button type="button" onClick={handleRaise} >raise</button></> :
           <button type="button" onClick={handleAllIn}>All-In</button>}
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Container, Text, useTick } from "@pixi/react";
 import { IBot, IContainer, IPlayer } from "../../../types";
 import Hand from "./Hand";
-import { style } from "../styles";
+import { style, movingStyle } from "../styles";
 
 let i = 0;
 const Player: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
@@ -11,11 +11,11 @@ const Player: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
 
-  useTick(delta => {
-    i += 0.01 * delta;
-    setX(Math.sin(i) * 10)
-    setY(Math.sin(i / 1.5) * 10)
-  });
+  // useTick(delta => {
+  //   i += 0.01 * delta;
+  //   setX(Math.sin(i) * 10)
+  //   setY(Math.sin(i / 1.5) * 10)
+  // });
 
   return (
     <Container x={item.id === 0 ? x : 250 * item.id} y={item.id === 0 ? y : 0}>
@@ -24,7 +24,7 @@ const Player: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
           text={`${item.name}`}
           anchor={{ x: 1, y: 0 }}
           x={cSize ? cSize.width : 0}
-          style={style}
+          style={item.isMoving ? movingStyle : style}
         />
         <Text
           text={`stack: ${item.stack}`}

@@ -43,15 +43,13 @@ export class Bot implements IBot {
   }
 
   clearStates(): void {
-    runInAction(() => {
-      this.bet = 0;
-      this.isMoving = false;
+    this.bet = 0;
+    this.isMoving = false;
 
-      if (this.turn !== fold && this.turn !== allIn || gameStore.round === "finish") {
-        console.log("clear turn!!!");
-        this.turn = false;
-      }
-    })
+    if (this.turn !== fold && this.turn !== allIn || gameStore.round === "finish") {
+      console.log("clear turn!!!");
+      this.turn = false;
+    }
   }
 
   cardDistribution(): void {
@@ -60,6 +58,8 @@ export class Bot implements IBot {
 
   winner(): void {
     this.stack += gameStore.bank;
+    console.log("winner");
+
   }
 
   splitPot(length: number): void {
@@ -97,7 +97,7 @@ export class Bot implements IBot {
   }
 
   callCalculation() {
-    if (gameStore.maxBet < this.stack) {
+    if (gameStore.maxBet < this.stack + this.bet) {
       this.turn = call;
       this.stack -= gameStore.maxBet - this.bet;
       gameStore.bank += gameStore.maxBet - this.bet;

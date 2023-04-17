@@ -12,3 +12,16 @@ export const style = new TextStyle({
   wordWrap: true,
   wordWrapWidth: 440,
 });
+
+export const movingStyle = new TextStyle({
+  align: 'center',
+  fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
+  fontSize: 25,
+  fontWeight: '600',
+  fill: ['red', '#042f2d'], // gradient
+  stroke: '#01d27e',
+  strokeThickness: 4,
+  letterSpacing: 3,
+  wordWrap: true,
+  wordWrapWidth: 440,
+});

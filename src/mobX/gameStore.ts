@@ -40,57 +40,60 @@ export class Game implements IGameStore {
       })
     reaction(
       () => this.formStore.isStarted && this.dataStore.assetsLoaded, // changed it should to be careful, not sure how it works
-      () => {
+      async () => {
         this.addPlayers();
         this.blind();
-        this.decision();
+        await this.decision();
       }
     );
     reaction(
       () => this.round,
-      (round) => {
+      async (round) => {
         if (round === "flop") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = this.dataStore.cardsForPlay.slice(0, 3);
+          await new Promise(resolve =>
+            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 3))), 1000));
           this.makeMove();
-          this.decision();
+          await this.decision(); // this working recursively when round changes
         }
         else if (round === "turn") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = this.dataStore.cardsForPlay.slice(0, 4);
+          await new Promise(resolve =>
+            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 4))), 1000));
           this.makeMove();
-          this.decision();
+          await this.decision();
         }
         else if (round === 'river') {
           this.maxBet = 0;
           this.clearPlayerStates();
-          this.board = this.dataStore.cardsForPlay.slice(0, 5);
+          await new Promise(resolve =>
+            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 5))), 1000));
           this.makeMove();
-          this.decision();
+          await this.decision();
         }
       }
     );
     reaction(
       () => this.dataStore.handsCount,
-      () => {
+      async () => {
         console.log("was handscount");
         this.clearPlayerStates();
         this.blindRising(); // changed
         this.clearStoreStates();
         this.blind();
         this.cardDistribution();
-        if (!this.isGameOver) this.decision();
+        if (!this.isGameOver) await this.decision();
       }, { delay: 1000 }
     );
   }
 
-  handleCall(): void {
+  async handleCall() {
     this.players = handleTurn(this.players, call);
     const player = this.players[0];
     player.callCalculation();
-    this.decision();
+    await this.decision();
   }
 
   handleFold(): void {
@@ -204,88 +207,96 @@ export class Game implements IGameStore {
     console.log(this.round);
   }
 
-  private decision() {
-    runInAction(async () => {
-      let counter = 0;
-      while (counter < this.players.length) {
-        const index = this.players.findIndex(item => item.isMoving);
-        console.log(index);
-        const player = this.players[index];
-        const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
+  private async decision() {
+    let counter = 0;
+    while (counter < this.players.length) {
+      const index = this.players.findIndex(item => item.isMoving);
+      console.log(index);
+      const player = this.players[index];
+      const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
 
-        if (allFold(this.players)) {
-          console.log("folded");
-          await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
-          return;
-        }
-
-        if (player.turn !== fold && player.turn !== allIn) {
-          if (player.isBot && shouldMoveExp) {
-            await new Promise(resolve => setTimeout(() => resolve(player.ai()), 1500)); // react dont want to rerender when state is updated withour ticker.
-            //player.ai();
-            console.log(player.turn);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-          } // bot generates decision.
-        }
-
-        if (allFold(this.players)) { // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
-          console.log("folded");
-          await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
-          return;
-        }
-        // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
-        // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
-
-        if (this.round === "pre-flop" && player.bigBlind) {
-          const isSame = sameBids(this.players);
-          if (isSame) {
-            if (player.turn) {
-              player.isMoving = false;
-              runInAction(() => this.round = "flop");
-            }
-            console.log("was in isSame", this.round);
-            return;
-          }
-        }
-        // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
-        // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
-        // until all persons will fold except last one, or until there will be same bets.
-
-        if (this.round !== "pre-flop" && player.isDiller) {
-          const isSame = sameBids(this.players);
-
-          if (isSame) {
-            console.log("was in isSame", this.round);
-            if (player.turn) {
-
-              player.isMoving = false;
-              const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
-              const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
-              runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
-
-              if (this.round === "finish") {
-                await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
-                runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
-              }
-            }
-            return;
-          }
-        } // same as above one, but works for next rounds where last decision maker will be dealer (button).
-
-        const shouldRenderButtons = !player.isBot && player.turn === fold || !player.isBot && !shouldMoveExp;
-
-        if (player.isBot || shouldRenderButtons) {
-          this.changeArr(index);
-          this.circleIteration(index, "isMoving");
-          console.log("263");
-        } else {
-          console.log("269");
-          return;
-        } // should finish recursion if real player did not folded yet.
-        counter++;
+      if (allFold(this.players)) {
+        console.log("folded");
+        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
+        return;
       }
-      this.decision(); // recursion, which can't be infinitive in future, because player won't be possible to raise more than he have, so one return will be reached.
-    })
+
+      if (player.turn !== fold && player.turn !== allIn) {
+        if (player.isBot && shouldMoveExp) {
+          await new Promise(resolve => setTimeout(() => resolve(player.ai()), 1500)); // react dont want to rerender when state is updated withour ticker.
+          //player.ai();
+          console.log(player.turn);
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        } // bot generates decision.
+      }
+
+      if (allFold(this.players)) { // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
+        console.log("folded");
+        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
+        return;
+      }
+      // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
+      // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
+
+      if (this.round === "pre-flop" && player.bigBlind) {
+        const isSame = sameBids(this.players);
+        if (isSame) {
+          if (player.turn) {
+            player.isMoving = false;
+            runInAction(() => this.round = "flop"); // this will run this function again in reaction, so this block will be returned at the end.
+          }
+          console.log("was in isSame", this.round);
+          return;
+        }
+      }
+      // if round is pre-flop it means that last person who will make decision is BB so, when there is his turn  this part will check
+      // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
+      // until all persons will fold except last one, or until there will be same bets.
+
+      if (this.round !== "pre-flop" && player.isDiller) {
+        const isSame = sameBids(this.players);
+
+        if (isSame) {
+          console.log("was in isSame", this.round);
+          if (player.turn) {
+
+            player.isMoving = false;
+            const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
+            const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
+            runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
+            console.log("mainCheck");
+
+
+            if (this.round === "finish") {
+              console.log("was in isSame", this.round);
+              console.log("finish 1");
+
+              await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
+
+              console.log("finish 2");
+              runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
+            }
+          }
+          console.log("was returned");
+          return;
+        }
+      } // same as above one, but works for next rounds where last decision maker will be dealer (button).
+
+      const shouldRenderButtons = !player.isBot && player.turn === fold ||
+        !player.isBot && !shouldMoveExp ||
+        !player.isBot && player.turn === allIn;
+
+      if (player.isBot || shouldRenderButtons) {
+        this.changeArr(index);
+        this.circleIteration(index, "isMoving");
+        console.log("263");
+      } else {
+        console.log("269");
+        return;
+      } // should finish recursion if real player did not folded yet.
+      counter++;
+    }
+    this.decision(); // recursion, which can't be infinitive in future, because player won't be possible to raise more than he have, so one return will be reached.
   }
 
   private changeArr(index: number) {
