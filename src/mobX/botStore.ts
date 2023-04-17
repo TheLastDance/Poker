@@ -121,7 +121,7 @@ export class Bot implements IBot {
       raiseBet = 1; // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
     }
 
-    if (raiseBet * 2 <= this.stack) {
+    if (raiseBet * 2 < this.stack) {
       this.turn = raise;
       this.bet = this.bet + raiseBet * 2;
       this.stack -= raiseBet * 2;
@@ -144,6 +144,7 @@ export class Bot implements IBot {
       gameStore.bank += gameStore.smallBlindCost;
       this.bet += gameStore.smallBlindCost;
     }
+    if (this.stack === 0) this.turn = allIn;
   }
 
   private get randomName(): string {

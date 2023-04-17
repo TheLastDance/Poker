@@ -4,7 +4,7 @@ import { Bot } from "./botStore";
 import dataStore from "./dataStore";
 import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer, TurnsEnum } from "../types";
 import { Player } from "./playerStore";
-import { handleTurn, allFold, sameBids } from "./utilsForStore";
+import { handleTurn, allFold, sameBids, checkAllIns } from "./utilsForStore";
 import { checkWinner } from "../Utils/winnerCheck";
 
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
@@ -207,6 +207,25 @@ export class Game implements IGameStore {
     console.log(this.round);
   }
 
+  private async roundChange(player: IBot | IPlayer) {
+    player.isMoving = false;
+    const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
+    const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
+    runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
+    console.log("mainCheck");
+
+
+    if (this.round === "finish") {
+      console.log("was in isSame", this.round);
+      console.log("finish 1");
+
+      await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
+
+      console.log("finish 2");
+      runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
+    }
+  }
+
   private async decision() {
     let counter = 0;
     while (counter < this.players.length) {
@@ -214,10 +233,16 @@ export class Game implements IGameStore {
       console.log(index);
       const player = this.players[index];
       const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
+      const allInChecker = checkAllIns(this.players); // need to do something with that func tomorrow
 
       if (allFold(this.players)) {
         console.log("folded");
         await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
+        return;
+      }
+
+      if (allInChecker && sameBids(this.players)) {
+        this.roundChange(player);
         return;
       }
 
@@ -259,23 +284,7 @@ export class Game implements IGameStore {
         if (isSame) {
           console.log("was in isSame", this.round);
           if (player.turn) {
-
-            player.isMoving = false;
-            const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
-            const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
-            runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
-            console.log("mainCheck");
-
-
-            if (this.round === "finish") {
-              console.log("was in isSame", this.round);
-              console.log("finish 1");
-
-              await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
-
-              console.log("finish 2");
-              runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
-            }
+            this.roundChange(player);
           }
           console.log("was returned");
           return;
