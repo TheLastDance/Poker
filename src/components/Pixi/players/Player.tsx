@@ -27,7 +27,7 @@ const Player: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
           style={item.isMoving ? movingStyle : style}
         />
         <Text
-          text={`stack: ${item.stack}`}
+          text={`stack: ${item.stack.toFixed(2)}`}
           anchor={{ x: 0, y: 0 }}
           style={style}
           scale={0.8}
@@ -52,7 +52,7 @@ const Player: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
 
         {item.bet !== 0 &&
           <Text
-            text={`bet: ${item.bet}`}
+            text={`bet: ${item.bet.toFixed(2)}`}
             anchor={{ x: 0, y: 0 }}
             style={style}
             scale={0.8}

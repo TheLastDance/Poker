@@ -49,7 +49,7 @@ const App: React.FC = observer(() => {
             {gameStore.players.length &&
               gameStore.players.map((item, index) => <div key={index}>
                 <p>{item.name}</p>
-                <p>stack: {item.stack}</p>
+                <p>stack: {item.stack.toFixed(2)}</p>
                 {item.bigBlind ? <p>Big-Blind</p> : item.smallBlind ? <p>Small-Blind</p> : null}
                 {item.bet !== 0 && <p>Bet: {item.bet}</p>}
                 {item.isDiller && <p>Dealer</p>}

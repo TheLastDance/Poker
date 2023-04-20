@@ -4,7 +4,7 @@ const { RoyalFlush, HighCard, Flush, FullHouse, FourofaKind, ThreeofaKind, TwoPa
 
 // This function is going to take as an argument a concatenated array of players hand and a board + an id of player for easier calculations in game logic.
 // With this function we can check a combination at any time, at pre-flop, flop, turn or river. It will be useful for Bot AI.
-export function checkCombination(cards: IHand[], id: number): ICombination {
+export function checkCombination(cards: IHand[], id: number, betSum: number): ICombination {
   const values = cards.map(card => ({ ...card, value: Number(card.value) })).sort((a, b) => b.value - a.value);
   const suits = [...values].sort((a, b) => a.suit === b.suit ? 0 : a.suit < b.suit ? -1 : 1); // should be used where we need check by suit (flush/straight flush)
   // console.log(values)
@@ -30,43 +30,43 @@ export function checkCombination(cards: IHand[], id: number): ICombination {
   // kicker could be from board in one pair, two pairs, and so on. concat with arr if we need whole 5 cards comb and not only possible kicker cards.
 
   if (isFlushRoyale) {
-    return { combination: RoyalFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush, id: id };
+    return { combination: RoyalFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush, id: id, betSum: betSum };
   }
 
   if (isStarightFlush) {
-    return { combination: StraightFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush, id: id };
+    return { combination: StraightFlush, bestHand: isStarightFlush, fiveCards: isStarightFlush, id: id, betSum: betSum };
   }
 
   if (isFourOfAKind) {
-    return { combination: FourofaKind, bestHand: isFourOfAKind, fiveCards: fiveCards(isFourOfAKind), id: id };
+    return { combination: FourofaKind, bestHand: isFourOfAKind, fiveCards: fiveCards(isFourOfAKind), id: id, betSum: betSum };
   }
 
   if (isFullHouse) {
-    return { combination: FullHouse, bestHand: isFullHouse, fiveCards: isFullHouse, id: id };
+    return { combination: FullHouse, bestHand: isFullHouse, fiveCards: isFullHouse, id: id, betSum: betSum };
   }
 
   if (isFlush) {
-    return { combination: Flush, bestHand: isFlush, fiveCards: isFlush, id: id };
+    return { combination: Flush, bestHand: isFlush, fiveCards: isFlush, id: id, betSum: betSum };
   }
 
   if (isStraight) {
-    return { combination: Straight, bestHand: isStraight, fiveCards: isStraight, id: id };
+    return { combination: Straight, bestHand: isStraight, fiveCards: isStraight, id: id, betSum: betSum };
   }
 
   if (isThreeOfAKind) {
-    return { combination: ThreeofaKind, bestHand: isThreeOfAKind, fiveCards: fiveCards(isThreeOfAKind), id: id };
+    return { combination: ThreeofaKind, bestHand: isThreeOfAKind, fiveCards: fiveCards(isThreeOfAKind), id: id, betSum: betSum };
   }
 
   if (isTwoPairs) {
-    return { combination: TwoPair, bestHand: isTwoPairs, fiveCards: fiveCards(isTwoPairs), id: id };
+    return { combination: TwoPair, bestHand: isTwoPairs, fiveCards: fiveCards(isTwoPairs), id: id, betSum: betSum };
   }
 
   if (isOnePair) {
-    return { combination: OnePair, bestHand: isOnePair, fiveCards: fiveCards(isOnePair), id: id };
+    return { combination: OnePair, bestHand: isOnePair, fiveCards: fiveCards(isOnePair), id: id, betSum: betSum };
   }
 
   // If no other combination is found, return High card
-  return { combination: HighCard, bestHand: isHighCard, fiveCards: fiveCards(isHighCard), id: id };
+  return { combination: HighCard, bestHand: isHighCard, fiveCards: fiveCards(isHighCard), id: id, betSum: betSum };
 }
 
 function checkIdentical<T extends keyof IHand>(arr: valueNumber[], option: T, num: number) {

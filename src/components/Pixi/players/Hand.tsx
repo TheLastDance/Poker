@@ -6,9 +6,9 @@ import { IBot } from "../../../types";
 const Hand: React.FC<{ hand: IBot["hand"]; }> = ({ hand }) => {
   return (
     <Container
-      x={110}
+      x={140}
       y={30}
-      scale={0.4}
+      scale={0.3}
     >
       <Sprite
         image={hand[0]?.image}

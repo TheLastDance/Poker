@@ -28,6 +28,7 @@ const PlayersTurn: React.FC<IItem> = ({ item, maxBet, playerRaiseAmount }) => {
             id="raise"
             type="range"
             min={maxBet - item.bet + 1}
+            step={1}
             max={item.stack}
             value={playerRaiseAmount}
             onChange={(e) => handleRaiseInput(e)}

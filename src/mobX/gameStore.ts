@@ -2,9 +2,9 @@ import { makeAutoObservable, reaction, action, runInAction } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
-import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer, TurnsEnum } from "../types";
+import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer, TurnsEnum, ICombination } from "../types";
 import { Player } from "./playerStore";
-import { handleTurn, allFold, sameBids, checkAllIns } from "./utilsForStore";
+import { handleTurn, allFold, sameBids, checkAllIns, potAmount, giveBack } from "./utilsForStore";
 import { checkWinner } from "../Utils/winnerCheck";
 
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
@@ -80,6 +80,7 @@ export class Game implements IGameStore {
       async () => {
         console.log("was handscount");
         this.clearPlayerStates();
+        this.clearPlayerbetSum();
         this.blindRising(); // changed
         this.clearStoreStates();
         this.blind();
@@ -119,7 +120,7 @@ export class Game implements IGameStore {
 
   handleRaise(): void {
     const player = this.players[0];
-    player.raiseCalculation(); // should be another calculation here, because that one is for bot which can't choose raise with input range.
+    player.raiseCalculation();
     if (player.stack > 0) {
       this.players = handleTurn(this.players, raise);
     } else {
@@ -148,19 +149,80 @@ export class Game implements IGameStore {
     }
   } // will distribute cards for players when the new hand start.
 
+  private clearPlayerbetSum() {
+    for (const player of this.players) {
+      player.clearSumOfBets();
+    }
+  } // cleares states from last hand.
+
   private winnerChecking() {
-    const stayedInGame = this.players.filter(item => item.turn !== fold).map(item => item.combination());
+    let stayedInGame = this.players.filter(item => item.turn !== fold).map(item => item.combination());
+    let playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum);
+    let returnedMaxBetRemainder = false;
+
     const winners = checkWinner(stayedInGame);
 
-    if (winners.length === 1) {
-      const index = this.players.findIndex(item => item.id === winners[0].id);
-      this.players[index].winner();
-    } else {
-      for (const player of winners) {
-        const indexOfWinnerID = this.players.findIndex(item => item.id === player.id);
-        this.players[indexOfWinnerID].splitPot(winners.length);
+    const winnerCalculations = (arr: ICombination[]) => {
+      if (arr.length === 1) {
+        const index = this.players.findIndex(item => item.id === arr[0].id);
+        const player = this.players[index];
+        if (player.turn === allIn && playersMaxBet[0].betSum !== player.betSum) { // low all-in winning block
+          if (playersMaxBet[0].betSum !== playersMaxBet[1].betSum && !returnedMaxBetRemainder) {
+            giveBack(this.players, playersMaxBet);
+            returnedMaxBetRemainder = true;
+          }; // returns remaining of bet
+          const winningAmount = potAmount(this.players, player);
+
+          player.winnerByLowAllIn(winningAmount);
+
+          stayedInGame = this.players.filter(item => item.turn !== fold && item.id !== arr[0].id && item.betSum > 0)
+            .map(item => item.combination());
+
+          if (stayedInGame.length > 0) winnerCalculations(checkWinner(stayedInGame));
+        } else {
+          player.winner();
+        }
+      } else {
+        playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum);
+        const lowAllInCheck = arr.some(item => playersMaxBet[0].betSum !== item.betSum);
+        if (lowAllInCheck) { // low all-in split-pot block
+          if (playersMaxBet[0].betSum !== playersMaxBet[1].betSum && !returnedMaxBetRemainder) {
+            giveBack(this.players, playersMaxBet);
+            returnedMaxBetRemainder = true;
+          };
+
+          const winnerBetsSum = arr.reduce((acc, _, index) => {
+            const betSum = this.players[this.players.findIndex(item => item.id === arr[index].id)].betSum;
+            return acc + betSum;
+          }, 0);
+
+          const percentArr = arr.map((_, index) => {
+            const betSum = this.players[this.players.findIndex(item => item.id === arr[index].id)].betSum;
+            return betSum * 100 / winnerBetsSum;
+          });
+
+          const winningAmount = potAmount(this.players, [...arr].sort((a, b) => b.betSum - a.betSum)[0]);
+
+          for (let i = 0; i < arr.length; i++) {
+            const indexOfWinnerID = this.players.findIndex(item => item.id === arr[i].id);
+            this.players[indexOfWinnerID].winnerByLowAllIn(winningAmount * percentArr[i] / 100);
+          }
+
+          stayedInGame = this.players.filter(item => item.turn !== fold && item.id !== arr[0].id && item.betSum > 0)
+            .map(item => item.combination());
+
+          if (stayedInGame.length > 0) winnerCalculations(checkWinner(stayedInGame));
+
+        } else {
+          for (const player of arr) {
+            const indexOfWinnerID = this.players.findIndex(item => item.id === player.id);
+            this.players[indexOfWinnerID].splitPot(arr.length);
+          }
+        }
       }
     }
+
+    winnerCalculations(winners);
   }
 
   private addPlayers() {

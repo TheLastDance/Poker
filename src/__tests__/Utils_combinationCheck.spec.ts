@@ -123,9 +123,9 @@ let output6 = {
 describe("Testing combinations", () => {
 
   it("Straight flush", () => {
-    let twoStraights = checkCombination(test1, 0); // zero is a mock id for test
-    let separately = checkCombination(test2, 0);
-    let twoFlushs = checkCombination(test3, 0);
+    let twoStraights = checkCombination(test1, 0, 0); // zero is a mock id for test
+    let separately = checkCombination(test2, 0, 0);
+    let twoFlushs = checkCombination(test3, 0, 0);
 
     expect(twoStraights.combination).toEqual(output1.combination);
     expect(twoStraights.bestHand).toEqual(output1.bestHand);
@@ -135,7 +135,7 @@ describe("Testing combinations", () => {
   })
 
   it("Flush royale", () => {
-    let flushRoayle = checkCombination(test4, 0);
+    let flushRoayle = checkCombination(test4, 0, 0);
     const { bestHand, combination } = flushRoayle;
 
     expect(bestHand).toEqual(bestHand);
@@ -143,8 +143,8 @@ describe("Testing combinations", () => {
   })
 
   it("Low straight/straight flush", () => {
-    let lowStraight = checkCombination(test5, 0);
-    let lowStraightFlush = checkCombination(test6, 0);
+    let lowStraight = checkCombination(test5, 0, 0);
+    let lowStraightFlush = checkCombination(test6, 0, 0);
 
     expect(lowStraight.combination).toEqual(output5.combination);
     expect(lowStraight.bestHand).toEqual(output5.bestHand);

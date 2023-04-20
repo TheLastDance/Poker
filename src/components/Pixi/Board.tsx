@@ -21,7 +21,7 @@ const Board: React.FC<IAppSizes> = (props) => {
 
     <Container
       ref={containerRef}
-      scale={0.35}
+      scale={0.3}
       x={cSize ? appWidth / 2 - cSize.width / 2 : 0}
       y={cSize ? appHeight / 2 - cSize.height / 2 : 0}
       rotation={a}

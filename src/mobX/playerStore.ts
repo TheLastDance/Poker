@@ -15,6 +15,7 @@ export class Player extends Bot implements IPlayer {
 
   override raiseCalculation(): void {
     this.bet += gameStore.playerRaiseAmount;
+    this.betSum += gameStore.playerRaiseAmount;
     this.stack -= gameStore.playerRaiseAmount;
     gameStore.bank += gameStore.playerRaiseAmount;
     gameStore.maxBet = this.bet;

@@ -11,7 +11,7 @@ const Stats: React.FC<Pick<IAppSizes, "appHeight">> = (props) => {
   const { gameStore, dataStore } = rootStore;
 
   const textArray = [
-    `BANK: ${gameStore.bank}`,
+    `BANK: ${gameStore.bank.toFixed(2)}`,
     `ROUND: ${gameStore.round}`,
     `PLAYED HANDS: ${dataStore.handsCount}`,
     `YOUR COMBINATION: ${gameStore.players ? gameStore.players[0].combination().combination : null}`

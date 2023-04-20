@@ -22,7 +22,7 @@ export function checkWinner(players: ICombination[]): ICombination[] {
   const maxComb = filterOnEqual[0].combination;
   console.log(filterOnEqual);
 
-  const needKicker = [HighCard, OnePair, TwoPair, ThreeofaKind, FourofaKind];
+  const needKicker = [HighCard, OnePair, TwoPair, ThreeofaKind, FourofaKind, Flush];
 
   if (filterOnEqual.length !== 1 && maxComb !== RoyalFlush) {
     const compareHighHand = highHand(filterOnEqual, "bestHand");

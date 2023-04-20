@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction, reaction } from "mobx";
 import { ICardsForPlay, IDataStore, ICard } from "../types";
 import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
-import bg1 from "./../assets/bg1.jpg";
+import bg3 from "./../assets/bg3.jpg";
 
 const CARD_VALUES: { [key: string]: string; } = {
   "ACE": "14",
@@ -63,7 +63,7 @@ class Data implements IDataStore {
         Assets.add(`${i}`, this.cards[i].image);
         arr.push(`${i}`);
       }
-      Assets.add("background-1", bg1);
+      Assets.add("background-1", bg3);
       arr.push("background-1");
       await Assets.load(arr, this.onProgress); // Preload all textures using pixiJS
     } catch (err) {

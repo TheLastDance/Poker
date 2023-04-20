@@ -14,6 +14,7 @@ export class Bot implements IBot {
   name: string;
   stack = 0;
   bet = 0;
+  betSum = 0;
   bigBlind = false;
   smallBlind = false;
   isDiller = false;
@@ -23,23 +24,19 @@ export class Bot implements IBot {
   id = 0;
   dataStore: IDataStore;
   formStore: IFormStore;
-  animation = false;
   // private random = 0.1;
 
+  // low all-in and all-in split pots was tested with argument inside constructor, where we could put specific hand to mock specific situation.
   constructor() {
     this.dataStore = dataStore;
     this.formStore = formStore;
     this.hand = this.dataStore.selectCards();
-    this.stack = +this.formStore.playerBank;
+    this.stack = +this.formStore.playerBank
     this.name = this.randomName;
   }
 
-  runAnimation() {
-    this.animation = true;
-  }
-
-  finishAnimation() {
-    this.animation = false;
+  clearSumOfBets() {
+    this.betSum = 0;
   }
 
   clearStates(): void {
@@ -59,7 +56,17 @@ export class Bot implements IBot {
   winner(): void {
     this.stack += gameStore.bank;
     console.log("winner");
+  }
 
+  winnerByLowAllIn(pot: number): void {
+    this.stack += pot;
+    gameStore.bank -= pot;
+  }
+
+  giveBackRemaining(remainder: number) {
+    this.stack += remainder;
+    this.betSum -= remainder;
+    gameStore.bank -= remainder;
   }
 
   splitPot(length: number): void {
@@ -68,26 +75,26 @@ export class Bot implements IBot {
 
   combination(): ICombination {
     const board = gameStore.board;
-    return checkCombination(board.concat(this.hand), this.id);
+    return checkCombination(board.concat(this.hand), this.id, this.betSum);
   }
 
-  ai(): void {
+  ai(): void { //changed
     runInAction(() => {
       const random = Math.random();
       // better to make a getter function with returns
 
-      if (random < 0.2) {
+      if (random < 0.1) {
         this.turn = fold;
         return;
       }
-      else if (random >= 0.2 && random < 0.5 && this.bet < gameStore.maxBet) {
+      else if (random >= 0.2 && random < 0.3 && this.bet < gameStore.maxBet) {
         this.callCalculation();
         return;
       }
-      else if (random >= 0.5 && this.bet === gameStore.maxBet) {
+      else if (random >= 0.9 && this.bet === gameStore.maxBet) {
         this.turn = check;
         return;
-      } else if (this.turn !== raise) {
+      } else if (random > 0) {
         this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
         return;
       } else {
@@ -101,6 +108,7 @@ export class Bot implements IBot {
       this.turn = call;
       this.stack -= gameStore.maxBet - this.bet;
       gameStore.bank += gameStore.maxBet - this.bet;
+      this.betSum += gameStore.maxBet - this.bet;
       this.bet += gameStore.maxBet - this.bet;
     } else {
       this.allInCalculation();
@@ -110,6 +118,7 @@ export class Bot implements IBot {
   allInCalculation() {
     this.turn = allIn;
     gameStore.bank += this.stack;
+    this.betSum += this.stack;
     this.bet += this.stack;
     this.stack = 0;
   }
@@ -123,6 +132,7 @@ export class Bot implements IBot {
 
     if (raiseBet * 2 < this.stack) {
       this.turn = raise;
+      this.betSum += raiseBet * 2;
       this.bet = this.bet + raiseBet * 2;
       this.stack -= raiseBet * 2;
       gameStore.bank += raiseBet * 2;
@@ -133,16 +143,19 @@ export class Bot implements IBot {
     }
   }
 
+  blinds(blindCost: number) {
+    this.stack -= blindCost;
+    gameStore.bank += blindCost;
+    this.bet += blindCost;
+    this.betSum += blindCost;
+  }
+
   blindsCalculation() {
     if (this.bigBlind) {
-      this.stack -= gameStore.bigBlindCost;
-      gameStore.bank += gameStore.bigBlindCost;
-      this.bet += gameStore.bigBlindCost;
+      this.blinds(gameStore.bigBlindCost);
     }
     if (this.smallBlind) {
-      this.stack -= gameStore.smallBlindCost;
-      gameStore.bank += gameStore.smallBlindCost;
-      this.bet += gameStore.smallBlindCost;
+      this.blinds(gameStore.smallBlindCost);
     }
     if (this.stack === 0) this.turn = allIn;
   }

@@ -17,6 +17,7 @@ export interface ICombination {
   bestHand: valueNumber[];
   fiveCards: valueNumber[];
   id: number;
+  betSum: number;
 }
 
 export type valueNumber = Omit<IHand, "value"> & { value: number; };
@@ -87,6 +88,7 @@ export interface IBot {
   name: string;
   stack: number;
   bet: number;
+  betSum: number;
   bigBlind: boolean;
   smallBlind: boolean;
   isDiller: boolean;
@@ -96,12 +98,12 @@ export interface IBot {
   id: number;
   dataStore: IDataStore;
   formStore: IFormStore;
-  animation: boolean;
-  runAnimation: () => void;
-  finishAnimation: () => void;
+  clearSumOfBets: () => void;
   clearStates: () => void;
   cardDistribution: () => void;
+  giveBackRemaining: (remainder: number) => void;
   winner: () => void;
+  winnerByLowAllIn: (pot: number) => void;
   splitPot: (length: number) => void;
   ai: () => void;
   callCalculation: () => void;

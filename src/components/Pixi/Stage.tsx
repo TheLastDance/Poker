@@ -22,7 +22,7 @@ const MainStage: React.FC = () => {
   }, [stageRef]);
 
   return (
-    <Stage ref={stageRef} width={800} height={800} options={{}}>
+    <Stage ref={stageRef} width={1000} height={1000} options={{}}>
       {/* {dataStore.assetsLoaded && <>
         <Background appWidth={width} appHeight={height} />
         <PlayerList />
