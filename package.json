@@ -15,7 +15,6 @@
     "mobx-react-lite": "^3.4.3",
     "node-sass": "^7.0.3",
     "pixi.js": "^7.2.4",
-    "puxi.js": "^0.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
