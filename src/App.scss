@@ -1,5 +1,10 @@
 @import "resets";
 
+body {
+    background-color: rgb(129, 129, 129);
+    overflow: hidden;
+}
+
 .App {
     display: flex;
     justify-content: center;

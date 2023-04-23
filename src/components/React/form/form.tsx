@@ -12,6 +12,7 @@ const Form: React.FC = observer(() => {
       <form onSubmit={(e) => start(e)}>
         <label htmlFor="players_name">Enter your name:</label>
         <input
+          maxLength={15}
           id="players_name"
           placeholder="Anonymous"
           type="text"

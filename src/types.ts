@@ -7,6 +7,11 @@ export interface IAppSizes {
   appWidth: number;
 };
 
+export interface IBotInfo {
+  name: string;
+  avatar: string;
+}
+
 export interface IHand {
   value: string;
   suit: string;
@@ -85,7 +90,7 @@ export interface IFormStore {
 
 export interface IBot {
   hand: ICardsForPlay[];
-  name: string;
+  info: IBotInfo;
   stack: number;
   bet: number;
   betSum: number;
@@ -115,7 +120,7 @@ export interface IBot {
 
 export interface IPlayer extends IBot {
   //raiseAmount: string;
-  raiseInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  raiseInput: (e: number) => void;
 }
 
 export interface IGameStore {
@@ -125,6 +130,7 @@ export interface IGameStore {
   bank: number;
   round: string;
   maxBet: number;
+  isShowDown: boolean;
   formStore: IFormStore;
   dataStore: IDataStore;
 }

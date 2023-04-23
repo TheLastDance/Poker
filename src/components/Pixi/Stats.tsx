@@ -24,6 +24,9 @@ const Stats: React.FC<Pick<IAppSizes, "appHeight">> = (props) => {
       y={cSize ? appHeight - cSize.height : 300}>
       {textArray.map((item, index) =>
         <Text
+          cursor="pointer"
+          eventMode="static"
+          pointerdown={() => console.log("123")}
           key={index}
           text={item}
           anchor={{ x: 0, y: 1 }}

@@ -1,17 +1,22 @@
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
-import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum } from "../types";
+import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum, IBotInfo } from "../types";
 import { checkCombination } from "../Utils/combinationCheck";
 import { runInAction } from "mobx";
+import { botInfo } from "../data/botInfoData";
 
 const { fold, call, check, raise, allIn } = TurnsEnum;
 
-let botNames = ["Mark", "Eduard", "Travis", "Anna", "Nelson", "Vinnie", "Nancy", "Bella"];
 
+// not mobX class
 export class Bot implements IBot {
+  info: IBotInfo = {
+    name: "",
+    avatar: "",
+  };
+
   hand: ICardsForPlay[] = [];
-  name: string;
   stack = 0;
   bet = 0;
   betSum = 0;
@@ -32,7 +37,7 @@ export class Bot implements IBot {
     this.formStore = formStore;
     this.hand = this.dataStore.selectCards();
     this.stack = +this.formStore.playerBank
-    this.name = this.randomName;
+    this.info = this.randomBot();
   }
 
   clearSumOfBets() {
@@ -87,15 +92,15 @@ export class Bot implements IBot {
         this.turn = fold;
         return;
       }
-      else if (random >= 0.2 && random < 0.3 && this.bet < gameStore.maxBet) {
+      else if (random >= 0.2 && random < 0.7 && this.bet < gameStore.maxBet) {
         this.callCalculation();
         return;
       }
-      else if (random >= 0.9 && this.bet === gameStore.maxBet) {
+      else if (random >= 0.2 && this.bet === gameStore.maxBet) {
         this.turn = check;
         return;
-      } else if (random > 0) {
-        this.raiseCalculation(); // also could be a bug here, when bot raises on flop/turn/river calculation is not working, maybe because maxBet === 0;
+      } else if (random > 0.5) {
+        this.raiseCalculation();
         return;
       } else {
         this.turn = fold;
@@ -160,11 +165,12 @@ export class Bot implements IBot {
     if (this.stack === 0) this.turn = allIn;
   }
 
-  private get randomName(): string {
-    const index: number = Math.floor(Math.random() * botNames.length);
-    const name: string = botNames[index];
-    botNames.splice(index, 1);
-    return `Bot-${name}`;
+  private randomBot(): IBotInfo {
+    const index: number = Math.floor(Math.random() * botInfo.length);
+    botInfo[index].name = `Bot-${botInfo[index].name}`;
+    const info = botInfo[index];
+    botInfo.splice(index, 1);
+    return info;
   } // randomizes name of bot at the start of the game.
 }
 

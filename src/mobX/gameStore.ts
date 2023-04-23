@@ -17,9 +17,10 @@ export class Game implements IGameStore {
   bank = 0;
   round = "pre-flop";
   maxBet = this.bigBlindCost;
-  playerRaiseAmount = this.maxBet + 1;
+  playerRaiseAmount = 0;
   board: ICardsForPlay[] = [];
   isGameOver = false;
+  isShowDown = false;
   formStore: IFormStore;
   dataStore: IDataStore;
 
@@ -36,7 +37,7 @@ export class Game implements IGameStore {
     this.dataStore = dataStore;
     reaction(() => this.maxBet,
       () => {
-        this.playerRaiseAmount = this.maxBet - this.players[0].bet + 1; // could be issue
+        this.updateRaise();
       })
     reaction(
       () => this.formStore.isStarted && this.dataStore.assetsLoaded, // changed it should to be careful, not sure how it works
@@ -52,28 +53,25 @@ export class Game implements IGameStore {
         if (round === "flop") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          await new Promise(resolve =>
-            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 3))), 1000));
+          this.board = this.dataStore.cardsForPlay.slice(0, 3);
           this.makeMove();
           await this.decision(); // this working recursively when round changes
         }
         else if (round === "turn") {
           this.maxBet = 0;
           this.clearPlayerStates();
-          await new Promise(resolve =>
-            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 4))), 1000));
+          this.board = this.dataStore.cardsForPlay.slice(0, 4);
           this.makeMove();
           await this.decision();
         }
         else if (round === 'river') {
           this.maxBet = 0;
           this.clearPlayerStates();
-          await new Promise(resolve =>
-            setTimeout(() => resolve(runInAction(() => this.board = this.dataStore.cardsForPlay.slice(0, 5))), 1000));
+          this.board = this.dataStore.cardsForPlay.slice(0, 5);
           this.makeMove();
           await this.decision();
         }
-      }
+      }, { delay: 1500 }
     );
     reaction(
       () => this.dataStore.handsCount,
@@ -107,7 +105,7 @@ export class Game implements IGameStore {
     this.decision();
   }
 
-  handleRaiseInput(e: React.ChangeEvent<HTMLInputElement>): void {
+  handleRaiseInput(e: number): void {
     if (this.players[0] instanceof Player) this.players[0].raiseInput(e);
   }
 
@@ -135,6 +133,14 @@ export class Game implements IGameStore {
     console.log("clear round", this.round);
     this.board = [];
     this.maxBet = this.bigBlindCost;
+    this.isShowDown = false;
+    this.updateRaise();
+  }
+
+  private updateRaise() {
+    if (this.players[0] instanceof Player) {
+      this.playerRaiseAmount = this.maxBet + 1 - this.players[0].bet;
+    }
   }
 
   private clearPlayerStates() {
@@ -183,7 +189,7 @@ export class Game implements IGameStore {
           player.winner();
         }
       } else {
-        playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum);
+        playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum); // maybe need to do this with winners array.
         const lowAllInCheck = arr.some(item => playersMaxBet[0].betSum !== item.betSum);
         if (lowAllInCheck) { // low all-in split-pot block
           if (playersMaxBet[0].betSum !== playersMaxBet[1].betSum && !returnedMaxBetRemainder) {
@@ -280,7 +286,7 @@ export class Game implements IGameStore {
     if (this.round === "finish") {
       console.log("was in isSame", this.round);
       console.log("finish 1");
-
+      this.isShowDown = true;
       await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
 
       console.log("finish 2");
@@ -304,6 +310,7 @@ export class Game implements IGameStore {
       }
 
       if (allInChecker && sameBids(this.players)) {
+        this.isShowDown = true;
         this.roundChange(player);
         return;
       }
@@ -477,6 +484,7 @@ export class Game implements IGameStore {
     } // calculates blinds
 
     this.makeMove();
+    this.updateRaise();
   }
 }
 

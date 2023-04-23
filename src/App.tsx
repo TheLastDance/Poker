@@ -22,30 +22,31 @@ const App: React.FC = observer(() => {
   }, []);
   console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
   console.log(gameStore.players);
+  console.log(dataStore.cardsForPlay);
 
   return (
     <div className="App">
       {!isStarted && <Form />}
       {dataStore.assetsLoaded && isStarted ?
-        <div className='test_container' style={{ overflowY: 'scroll', height: '100%', }}>
-          <span>Hello {name}!</span>
-          <span>You have {opponents} opponents</span>
+        <div className='test_container'>
+          {/* <span>Hello {name}!</span>
+          <span>You have {opponents} opponents</span> */}
           <div>
-            {dataStore.cardsForPlay.length &&
+            {/* {dataStore.cardsForPlay.length &&
               <div>
                 {gameStore.board.map((item, index) => <img key={index} src={item.image} alt="" />)}
               </div>
             }
-            <button type='button' onClick={() => dataStore.handIncrement()}>CLICK IT AND SHUFFLE</button>
+            <button type='button' onClick={() => dataStore.handIncrement()}>CLICK IT AND SHUFFLE</button> */}
             {/* test for cards shuffling with mobX */}
           </div>
-          <div className='stats'>
+          {/* <div className='stats'>
             <p>BANK: {gameStore.bank}</p>
             <p>ROUND: {gameStore.round}</p>
             <p>Hands was played: {dataStore.handsCount}</p>
             <p>Your combination: {gameStore.players && gameStore.players[0].combination().combination}</p>
-          </div>
-          <div style={{ display: "flex", }}>
+          </div> */}
+          {/* <div style={{ display: "flex", }}>
             {gameStore.players.length &&
               gameStore.players.map((item, index) => <div key={index}>
                 <p>{item.name}</p>
@@ -61,7 +62,7 @@ const App: React.FC = observer(() => {
                 <img src={item.hand[1]?.image} alt="" />
               </div>)
             }
-          </div>
+          </div> */}
           <AppProvider value={app}>
             <MainStage />
           </AppProvider>
