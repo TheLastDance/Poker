@@ -288,7 +288,6 @@ module.exports = {
     "@typescript-eslint/prefer-as-const": "error",
     "@typescript-eslint/prefer-for-of": ["error"],
     "@typescript-eslint/prefer-namespace-keyword": "error",
-    "@typescript-eslint/prefer-optional-chain": "warn",
     "@typescript-eslint/triple-slash-reference": [
       "error",
       { path: "never", types: "never", lib: "never" },

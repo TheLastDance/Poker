@@ -2,9 +2,9 @@ import { PixiRef, Container } from "@pixi/react";
 
 export type IContainer = PixiRef<typeof Container>;
 
-export interface IAppSizes {
-  appHeight: number;
-  appWidth: number;
+export interface IAppSize {
+  size: number;
+  scaleRatio: number;
 };
 
 export interface IBotInfo {

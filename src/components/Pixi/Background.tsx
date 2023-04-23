@@ -1,16 +1,16 @@
 import React from "react";
 import { Sprite } from "@pixi/react";
-import { IAppSizes } from "../../types";
+import { IAppSize } from "../../types";
 import bg from "./../../assets/bg.jpg"
 
-const Background: React.FC<IAppSizes> = (props) => {
-  const { appWidth, appHeight } = props;
+const Background: React.FC<Pick<IAppSize, "size">> = (props) => {
+  const { size } = props;
 
   return (
     <Sprite
       image={bg}
-      width={appWidth}
-      height={appHeight}
+      width={size}
+      height={size}
       x={0}
       y={0}>
     </Sprite>

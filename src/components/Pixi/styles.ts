@@ -46,3 +46,9 @@ export const movingStyle = new TextStyle({
   wordWrap: true,
   wordWrapWidth: 440,
 });
+
+export const inputNumberStyle = new TextStyle({
+  fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
+  fontSize: 23,
+  fontWeight: '600',
+});

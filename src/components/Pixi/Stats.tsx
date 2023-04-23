@@ -1,13 +1,11 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Container, Text } from "@pixi/react";
-import { IAppSizes, IContainer } from "../../types";
+import { IAppSize } from "../../types";
 import rootStore from "../../mobX";
 import { style } from "./styles";
 
-const Stats: React.FC<Pick<IAppSizes, "appHeight">> = (props) => {
-  const containerRef = useRef<IContainer>(null);
-  const cSize = containerRef.current;
-  const { appHeight } = props;
+const Stats: React.FC<IAppSize> = (props) => {
+  const { size, scaleRatio } = props;
   const { gameStore, dataStore } = rootStore;
 
   const textArray = [
@@ -19,9 +17,10 @@ const Stats: React.FC<Pick<IAppSizes, "appHeight">> = (props) => {
 
   return (
     <Container
-      ref={containerRef}
       x={0}
-      y={cSize ? appHeight - cSize.height : 300}>
+      y={size - 85 * scaleRatio}
+      scale={scaleRatio}
+    >
       {textArray.map((item, index) =>
         <Text
           cursor="pointer"

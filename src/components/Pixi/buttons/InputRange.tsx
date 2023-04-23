@@ -11,6 +11,7 @@ import btn_green from "../../../assets/btn_green.png";
 import chip from "../../../assets/clicker-chip.png";
 import { Text, Container } from "@pixi/react";
 import Button from "./Button";
+import { inputNumberStyle } from "../styles";
 
 interface IItem {
   item: IPlayer;
@@ -41,16 +42,17 @@ const InputRange: React.FC<IItem> = ({ item }) => {
 
 
   return (
-    <Container y={80}>
+    <Container x={-100} y={50}>
       <Text
         text={gameStore.playerRaiseAmount ? `${gameStore.playerRaiseAmount.toFixed(2)}$` : ""}
         x={200}
-        y={-3}
+        y={0}
+        style={inputNumberStyle}
       />
 
       <Input />
 
-      <Container x={270} y={-3}>
+      <Container x={310} y={-3}>
         <Button handleTurn={handleRaise} text="Raise" defaultView={btn_green} hoverView={btn_orange} pressedView={btn_black} />
       </Container>
     </Container>
