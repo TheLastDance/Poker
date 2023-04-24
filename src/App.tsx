@@ -4,8 +4,6 @@ import { observer } from 'mobx-react-lite';
 import './App.scss';
 import Form from './components/React/form/form';
 import rootStore from './mobX';
-import { Player } from './mobX/playerStore';
-import PlayersTurn from './components/React/playersTurn/playersTurn';
 import { Application } from 'pixi.js';
 import { AppProvider } from "@pixi/react";
 import MainStage from './components/Pixi/Stage';
@@ -13,61 +11,26 @@ import MainStage from './components/Pixi/Stage';
 const app = new Application();
 
 const App: React.FC = observer(() => {
-  const { formStore: { isStarted, opponents, name }, dataStore, gameStore } = rootStore;
-  //console.log(app.view.width);
+  const { formStore: { isStarted }, dataStore, gameStore } = rootStore;
 
   useEffect(() => {
-    dataStore.fetch();
     // eslint-disable-next-line
+    dataStore.fetch();
   }, []);
+
   console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
   console.log(gameStore.players);
   console.log(dataStore.cardsForPlay);
 
   return (
     <div className="App">
-      {!isStarted && <Form />}
-      {dataStore.assetsLoaded && isStarted ?
-        <div className='test_container'>
-          {/* <span>Hello {name}!</span>
-          <span>You have {opponents} opponents</span> */}
-          <div>
-            {/* {dataStore.cardsForPlay.length &&
-              <div>
-                {gameStore.board.map((item, index) => <img key={index} src={item.image} alt="" />)}
-              </div>
-            }
-            <button type='button' onClick={() => dataStore.handIncrement()}>CLICK IT AND SHUFFLE</button> */}
-            {/* test for cards shuffling with mobX */}
-          </div>
-          {/* <div className='stats'>
-            <p>BANK: {gameStore.bank}</p>
-            <p>ROUND: {gameStore.round}</p>
-            <p>Hands was played: {dataStore.handsCount}</p>
-            <p>Your combination: {gameStore.players && gameStore.players[0].combination().combination}</p>
-          </div> */}
-          {/* <div style={{ display: "flex", }}>
-            {gameStore.players.length &&
-              gameStore.players.map((item, index) => <div key={index}>
-                <p>{item.name}</p>
-                <p>stack: {item.stack.toFixed(2)}</p>
-                {item.bigBlind ? <p>Big-Blind</p> : item.smallBlind ? <p>Small-Blind</p> : null}
-                {item.bet !== 0 && <p>Bet: {item.bet}</p>}
-                {item.isDiller && <p>Dealer</p>}
-                {item.isMoving && <p>IS MOVING-TRUE</p>}
-                {item.turn && <p>{item.turn}</p>}
-                {item.isMoving && item instanceof Player &&
-                  <PlayersTurn item={item} maxBet={gameStore.maxBet} playerRaiseAmount={gameStore.playerRaiseAmount} />}
-                <img src={item.hand[0]?.image} alt="" />
-                <img src={item.hand[1]?.image} alt="" />
-              </div>)
-            }
-          </div> */}
+      {!isStarted ? <Form /> :
+        dataStore.startCanvasRender ?
           <AppProvider value={app}>
             <MainStage />
-          </AppProvider>
-        </div> : isStarted ? <h1>LOADING...</h1>
-          : null}
+          </AppProvider> :
+          null
+      }
     </div>
   );
 })

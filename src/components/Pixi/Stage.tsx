@@ -1,11 +1,14 @@
 import { Stage } from '@pixi/react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Board from './Board';
 import Background from './Background';
 import Stats from './Stats';
 import PlayerList from './players/PlayersList';
+import Spinner from './Spinner';
+import rootStore from '../../mobX';
 
 const MainStage: React.FC = () => {
+  const { dataStore } = rootStore;
   const [dimensions, setDimensions] = useState(window.innerHeight > window.innerWidth ? window.innerWidth : window.innerHeight);
   const [scaleRatio, setScaleRatio] = useState(1);
   const defaultDimension = 939;
@@ -26,16 +29,15 @@ const MainStage: React.FC = () => {
 
   return (
     <Stage width={dimensions} height={dimensions} options={{ antialias: true }}>
-      {/* {dataStore.assetsLoaded && <>
-        <Background appWidth={width} appHeight={height} />
-        <PlayerList />
-        <Board appHeight={height} appWidth={width} />
-        <Stats appHeight={height} />
-      </>} */}
-      <Background size={dimensions} />
-      <PlayerList size={dimensions} scaleRatio={scaleRatio} />
-      <Board size={dimensions} scaleRatio={scaleRatio} />
-      <Stats size={dimensions} scaleRatio={scaleRatio} />
+
+      {dataStore.assetsLoaded ?
+        <>
+          <Background size={dimensions} />
+          <PlayerList size={dimensions} scaleRatio={scaleRatio} />
+          <Board size={dimensions} scaleRatio={scaleRatio} />
+          <Stats size={dimensions} scaleRatio={scaleRatio} />
+        </> :
+        <Spinner size={dimensions} scaleRatio={scaleRatio} />}
 
     </Stage>
   );

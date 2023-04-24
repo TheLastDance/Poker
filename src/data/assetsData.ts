@@ -1,5 +1,4 @@
 import background from "../assets/bg.jpg";
-import spinner from "../assets/ace.png";
 import bb_chip from "../assets/bb-chip.png";
 import bot_avatar_1 from "../assets/bot_avatar_1.jpg";
 import bot_avatar_2 from "../assets/bot_avatar_2.jpg";
@@ -30,7 +29,6 @@ import btn_blue from "../assets/btn_blue.png";
 
 export const assetsNames = [
   "background",
-  "spinner",
   "bb_chip",
   "bot_avatar_1",
   "bot_avatar_2",
@@ -60,7 +58,6 @@ export const assetsNames = [
 
 export const assetsUrls = [
   background,
-  spinner,
   bb_chip,
   bot_avatar_1,
   bot_avatar_2,

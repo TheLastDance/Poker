@@ -1,6 +1,6 @@
 import React from "react";
 import rootStore from "../../../mobX";
-import { Text, Sprite } from "@pixi/react";
+import { Text } from "@pixi/react";
 import { IPlayer, IBot } from "../../../types";
 import { style } from "../styles";
 
@@ -26,7 +26,6 @@ const Bets: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
         />
       }
     </>
-
   )
 }
 

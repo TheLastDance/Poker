@@ -28,6 +28,7 @@ const Buttons: React.FC<IItem> = ({ item }) => {
       <Container x={80}>
         <Button handleTurn={handleFold} text="Fold" defaultView={btn_red} hoverView={btn_orange} pressedView={btn_black} />
       </Container>
+
       {item.bet === gameStore.maxBet && item.turn !== allIn ?
         <Container x={210}>
           <Button handleTurn={handleCheck} text="Check" defaultView={btn_blue} hoverView={btn_orange} pressedView={btn_black} />
@@ -36,11 +37,13 @@ const Buttons: React.FC<IItem> = ({ item }) => {
           <Container x={210}>
             <Button handleTurn={handleCall} text="Call" defaultView={btn_blue} hoverView={btn_orange} pressedView={btn_black} />
           </Container> : null}
+
       {item.stack + item.bet > gameStore.maxBet + 1 ?
         <InputRange item={item} /> :
         <Container x={210}>
           <Button handleTurn={handleAllIn} text="All-In" defaultView={btn_blue} hoverView={btn_orange} pressedView={btn_black} />
         </Container>}
+
     </Container>
   );
 }

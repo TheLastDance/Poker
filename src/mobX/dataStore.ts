@@ -1,8 +1,9 @@
-import { makeAutoObservable, runInAction, reaction } from "mobx";
+import { makeAutoObservable, runInAction, reaction, action } from "mobx";
 import { ICardsForPlay, IDataStore, ICard } from "../types";
 import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
 import { assetsUrls, assetsNames } from "../data/assetsData";
+import clicker from "../assets/ace.png";
 
 const CARD_VALUES: { [key: string]: string; } = {
   ACE: "14",
@@ -16,9 +17,13 @@ class Data implements IDataStore {
   cardsForPlay: ICardsForPlay[] = [];
   handsCount = 0;
   assetsLoaded = false;
+  progress = 0;
+  startCanvasRender = false;
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      onProgress: action.bound,
+    });
     reaction(
       () => this.cards,
       () => {
@@ -46,19 +51,23 @@ class Data implements IDataStore {
     return value;
   } // value changing for api cards.
 
-  onProgress(progress: number): number {
+  onProgress = (progress: number): number => {
     console.log("progress", progress);
+    this.progress = progress;
     return progress;
   }
 
   async fetch() {
     try {
+      let arr = [];
+      Assets.add(`loader`, clicker);
+      await Assets.load("loader", () => runInAction(() => { this.startCanvasRender = true }));
+
       const response = await fetch('https://deckofcardsapi.com/api/deck/new/draw/?count=52');
       const json = await response.json();
       runInAction(() => {
         this.cards = json.cards.map((item: ICard) => ({ value: this.changeValue(item.value), suit: item.suit, image: item.image }));
       });
-      let arr = [];
 
       for (let i = 0; i < this.cards.length; i++) {
         Assets.add(`card-${i}`, this.cards[i].image);
