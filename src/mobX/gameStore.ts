@@ -21,6 +21,7 @@ export class Game implements IGameStore {
   board: ICardsForPlay[] = [];
   isGameOver = false;
   isShowDown = false;
+  boardAnimation = false;
   formStore: IFormStore;
   dataStore: IDataStore;
 
@@ -54,6 +55,7 @@ export class Game implements IGameStore {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 3);
+          runInAction(() => this.boardAnimation = true);
           this.makeMove();
           await this.decision(); // this working recursively when round changes
         }
@@ -134,6 +136,7 @@ export class Game implements IGameStore {
     this.board = [];
     this.maxBet = this.bigBlindCost;
     this.isShowDown = false;
+    this.boardAnimation = false;
     this.updateRaise();
   }
 
@@ -286,7 +289,7 @@ export class Game implements IGameStore {
     if (this.round === "finish") {
       console.log("was in isSame", this.round);
       console.log("finish 1");
-      this.isShowDown = true;
+      runInAction(() => { this.isShowDown = true });
       await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
 
       console.log("finish 2");
@@ -310,7 +313,7 @@ export class Game implements IGameStore {
       }
 
       if (allInChecker && sameBids(this.players)) {
-        this.isShowDown = true;
+        runInAction(() => { this.isShowDown = true });
         this.roundChange(player);
         return;
       }

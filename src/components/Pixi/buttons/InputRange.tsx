@@ -12,12 +12,13 @@ import chip from "../../../assets/clicker-chip.png";
 import { Text, Container } from "@pixi/react";
 import Button from "./Button";
 import { inputNumberStyle } from "../styles";
+import { observer } from "mobx-react-lite";
 
 interface IItem {
   item: IPlayer;
 }
 
-const InputRange: React.FC<IItem> = ({ item }) => {
+const InputRange: React.FC<IItem> = observer(({ item }) => {
   const { gameStore } = rootStore;
   const { gameStore: { handleRaiseInput, handleRaise } } = rootStore;
 
@@ -57,6 +58,6 @@ const InputRange: React.FC<IItem> = ({ item }) => {
       </Container>
     </Container>
   );
-}
+})
 
 export default InputRange;

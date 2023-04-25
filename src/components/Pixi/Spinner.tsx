@@ -4,8 +4,9 @@ import { IAppSize } from "../../types";
 import spinner from "../../assets/ace.png";
 import rootStore from "../../mobX";
 import { style } from "./styles";
+import { observer } from "mobx-react-lite";
 
-const Spinner: React.FC<IAppSize> = (props) => {
+const Spinner: React.FC<IAppSize> = observer((props) => {
   const { dataStore } = rootStore;
   const { progress } = dataStore;
   const { size, scaleRatio } = props;
@@ -34,6 +35,6 @@ const Spinner: React.FC<IAppSize> = (props) => {
       />
     </Container>
   )
-}
+})
 
 export default Spinner;

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Container, Text, useTick, NineSlicePlane, Sprite } from "@pixi/react";
+import { Container, Text, useTick, Sprite } from "@pixi/react";
 import { IBot, IContainer, IPlayer } from "../../../types";
 import Hand from "./Hand";
 import { style, movingStyle } from "../styles";
@@ -11,33 +11,27 @@ import chip from "../../../assets/chip.png";
 import BBchip from "../../../assets/bb-chip.png";
 import SBchip from "../../../assets/sb-chip.png";
 
+interface IProps {
+  item: IBot | IPlayer;
+  y: number;
+  y2: number;
+  index: number;
+  scaleRatio: number;
+}
 
-let i = 0;
-const PokerPlayer: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
+const PokerPlayer: React.FC<IProps> = (props) => {
   const containerRef = useRef<IContainer>(null);
-  const cSize = containerRef.current;
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
   const { formStore, gameStore } = rootStore;
+  const { item, y, y2, scaleRatio, index } = props;
   const { players } = gameStore;
   const { opponents } = formStore;
 
-  useTick(delta => {
-    i += 0.01 * delta;
-    // setX(Math.sin(i) * 10);
-    // setY(Math.sin(i / 1.5) * 10);
-    setX(2 + Math.cos(i) * 0.4);
-
-  });
-
   const angle = (Math.PI * 2) / (Number(opponents) + 1) * (- item.id);
-
-  //console.log(cSize?.width);
-
 
   return (
     <Container ref={containerRef}
-      x={325 * Math.sin(angle)} y={325 * Math.cos(angle)}
+      x={325 * Math.sin(angle)}
+      y={325 * Math.cos(angle)}
     >
       <Container>
         <Sprite
@@ -115,8 +109,8 @@ const PokerPlayer: React.FC<{ item: IBot | IPlayer; }> = ({ item }) => {
         }
 
       </Container>
-      <Hand item={item} />
-      {item.isMoving && item instanceof Player && <Buttons item={item} />}
+      <Hand item={item} y={y} y2={y2} index={index} scaleRatio={scaleRatio} />
+      {item.isMoving && item instanceof Player && !gameStore.isGameOver && <Buttons item={item} />}
     </Container>
   )
 }

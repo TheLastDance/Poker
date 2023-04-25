@@ -15,6 +15,7 @@ export interface IBotInfo {
 export interface IHand {
   value: string;
   suit: string;
+  image: string;
 } // type for testing, will remove in future I think.
 
 export interface ICombination {

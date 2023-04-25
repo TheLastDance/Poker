@@ -2,7 +2,6 @@ import { Stage } from '@pixi/react';
 import React, { useState, useEffect } from 'react';
 import Board from './Board';
 import Background from './Background';
-import Stats from './Stats';
 import PlayerList from './players/PlayersList';
 import Spinner from './Spinner';
 import rootStore from '../../mobX';
@@ -35,7 +34,6 @@ const MainStage: React.FC = () => {
           <Background size={dimensions} />
           <PlayerList size={dimensions} scaleRatio={scaleRatio} />
           <Board size={dimensions} scaleRatio={scaleRatio} />
-          <Stats size={dimensions} scaleRatio={scaleRatio} />
         </> :
         <Spinner size={dimensions} scaleRatio={scaleRatio} />}
 

@@ -19,11 +19,10 @@ class Data implements IDataStore {
   assetsLoaded = false;
   progress = 0;
   startCanvasRender = false;
+  startCardsAnimation = false;
 
   constructor() {
-    makeAutoObservable(this, {
-      onProgress: action.bound,
-    });
+    makeAutoObservable(this);
     reaction(
       () => this.cards,
       () => {
@@ -34,11 +33,13 @@ class Data implements IDataStore {
       () => this.handsCount,
       () => {
         this.shuffleArr();
+        this.startCardsAnimation = false;
       }
     );
   }
 
   selectCards() {
+    this.startCardsAnimation = true;
     return this.cardsForPlay.splice(0, 2);
   } // will distribute cards for players
 

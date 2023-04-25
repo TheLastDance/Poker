@@ -1,11 +1,10 @@
 import React, { useRef, useState } from "react";
-import { Container, Sprite, useTick, Text } from "@pixi/react";
+import { Container, Sprite, useTick, Text, withFilters } from "@pixi/react";
 import { IContainer } from "../../types";
 import rootStore from "../../mobX";
 import { IAppSize } from "../../types";
-import { style } from "./styles";
+import { style, outline } from "./styles";
 
-let i = 0;
 const Board: React.FC<IAppSize> = (props) => {
   const containerRef = useRef<IContainer>(null);
   const cSize = containerRef.current;
@@ -17,11 +16,15 @@ const Board: React.FC<IAppSize> = (props) => {
   const textArray = [
     `${gameStore.bank.toFixed(2)}$`,
     `ROUND: ${gameStore.round}`,
-  ]
+  ];
 
   useTick(delta => {
-    i += 0.01 * delta;
-    setX(i);
+    if (gameStore.boardAnimation) {
+      setX(prev => prev + 8.5 * delta);
+    }
+    if (!gameStore.boardAnimation) {
+      setX(0);
+    }
   });
 
   //console.log(cSize ? cSize.width : 0);
@@ -49,8 +52,9 @@ const Board: React.FC<IAppSize> = (props) => {
         )}
       </Container>
       <Container
+        filters={[outline(scaleRatio)]}
         ref={containerRef}
-        scale={0.3 * scaleRatio}
+        scale={0.32 * scaleRatio}
         x={cSize ? -cSize?.width / 2 : 0}
         y={cSize ? -cSize?.height / 2 : 0}
       >
@@ -58,7 +62,7 @@ const Board: React.FC<IAppSize> = (props) => {
           <Sprite
             key={index}
             image={item.image}
-            x={250 * index}
+            x={x >= index * 250 ? 250 * index : x}
           >
           </Sprite>
         )}

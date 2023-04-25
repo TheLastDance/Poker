@@ -1,6 +1,9 @@
 import { TextStyle } from 'pixi.js';
 import { Text } from 'pixi.js';
 import { FancyButton } from '@pixi/ui';
+import { OutlineFilter } from "pixi-filters";
+
+export const outline = (scaleRatio: number) => new OutlineFilter(2 * scaleRatio, 0x00000);
 
 export function buttonCreator(text: string, defaultView: string, pressedView: string, hoverView: string) {
   return new FancyButton({
