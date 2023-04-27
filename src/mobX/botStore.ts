@@ -27,6 +27,7 @@ export class Bot implements IBot {
   turn: TurnsEnum | false = false;
   isBot = true;
   id = 0;
+  //turnAnimation = false;
   dataStore: IDataStore;
   formStore: IFormStore;
   // private random = 0.1;
@@ -85,6 +86,7 @@ export class Bot implements IBot {
 
   ai(): void { //changed
     runInAction(() => {
+      //const comb = this.combination().bestHand;
       const random = Math.random();
       // better to make a getter function with returns
 
@@ -108,11 +110,16 @@ export class Bot implements IBot {
     })
   }
 
-  callCalculation() {
+  async callCalculation() {
     if (gameStore.maxBet < this.stack + this.bet) {
-      this.turn = call;
+      if (this.turn === call) {
+        this.turn = false;
+        await new Promise(resolve => setTimeout(() => resolve(this.turn = call), 500));
+      } else {
+        this.turn = call;
+      }
       this.stack -= gameStore.maxBet - this.bet;
-      gameStore.bank += gameStore.maxBet - this.bet;
+      runInAction(() => gameStore.bank += gameStore.maxBet - this.bet);
       this.betSum += gameStore.maxBet - this.bet;
       this.bet += gameStore.maxBet - this.bet;
     } else {
@@ -128,7 +135,7 @@ export class Bot implements IBot {
     this.stack = 0;
   }
 
-  raiseCalculation() {
+  async raiseCalculation() {
     let raiseBet = gameStore.maxBet;
 
     if (gameStore.maxBet === 0) {
@@ -136,12 +143,19 @@ export class Bot implements IBot {
     }
 
     if (raiseBet * 2 < this.stack) {
-      this.turn = raise;
+      if (this.turn === raise) {
+        this.turn = false;
+        await new Promise(resolve => setTimeout(() => resolve(this.turn = raise), 500));
+      } else {
+        this.turn = raise;
+      }
       this.betSum += raiseBet * 2;
       this.bet = this.bet + raiseBet * 2;
       this.stack -= raiseBet * 2;
-      gameStore.bank += raiseBet * 2;
-      gameStore.maxBet = this.bet;
+      runInAction(() => {
+        gameStore.bank += raiseBet * 2;
+        gameStore.maxBet = this.bet;
+      })
     } else {
       this.allInCalculation();
       if (gameStore.maxBet < this.bet) gameStore.maxBet = this.bet;

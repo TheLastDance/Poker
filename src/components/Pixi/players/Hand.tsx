@@ -1,11 +1,10 @@
-import React, { useState } from "react";
-import { Sprite, Container, useTick } from "@pixi/react";
+import React from "react";
+import { Sprite, Container } from "@pixi/react";
 import { IBot, IPlayer, TurnsEnum } from "../../../types";
 import card_back from "../../../assets/card_back3.png"
 import { Player } from "../../../mobX/playerStore";
 import rootStore from "../../../mobX";
 import { observer } from "mobx-react-lite";
-import { outline } from "../styles";
 
 interface IProps {
   item: IBot | IPlayer;
@@ -16,61 +15,31 @@ interface IProps {
 }
 
 const Hand: React.FC<IProps> = observer((props) => {
-  const { gameStore, dataStore, formStore: { opponents } } = rootStore;
-  const { startCardsAnimation } = dataStore;
+  const { gameStore } = rootStore;
   const { item, y, y2, scaleRatio, index } = props;
-  const angle = (Math.PI * 2) / (Number(opponents) + 1) * (- item.id);
 
-  // const [y, setY] = useState(0);
-
-  // const [y2, setY2] = useState(0);
-  // const [speed, setSpeed] = useState(0);
-
-  // useTick((delta) => {
-  //   setSpeed(prev => prev + 1.2 * delta);
-
-
-  //   if ((speed >= 3000 * (index)) && startCardsAnimation) {
-  //     //setSpeed(0);
-  //     setY(prev => prev + speed);
-  //   }
-
-  //   if ((speed >= 3000 * (index + 1) * 2) && startCardsAnimation) {
-  //     //setSpeed(0);
-  //     setY2(prev => prev + speed);
-  //   }
-
-  //   if (!startCardsAnimation) {
-  //     setSpeed(0);
-  //     setY(3000 * (index + 1));
-  //     setY2(3000 * (index + 1) * 2);
-  //   }
-  // });
-
-  const exp = item instanceof Player && y >= 0 || gameStore.isShowDown && item.turn !== TurnsEnum.fold;
+  const player = item instanceof Player;
+  const exp = player && y >= 0 || gameStore.isShowDown && item.turn !== TurnsEnum.fold;
 
   return (
     <Container
-      scale={0.32}
+      scale={player ? 0.47 : scaleRatio < 0.5 && exp ? 0.45 : 0.32}
       pivot={[50, 0]}
     >
       <Sprite
-        filters={[outline(scaleRatio)]}
-        y={y}
-        anchor={[0.5, 0.32]}
-        angle={-5}
-        rotation={y > 0 ? y / 100 : -0.1}
+        y={scaleRatio < 0.5 ? y - 25 : y}
+        x={player ? 30 : 0}
+        anchor={player ? [0.5, 0.8] : [0.5, 0.32]}
+        rotation={y > 0 ? y / 100 : scaleRatio < 0.5 ? 0 : -0.15}
         image={exp ? item.hand[0].image : card_back}
       >
       </Sprite>
       <Sprite
-        filters={[outline(scaleRatio)]}
         image={exp ? item.hand[1].image : card_back}
-        anchor={[0.5, 0.32]}
-        x={90}
-        y={y2 + 20}
-        angle={15}
-        rotation={y2 > 0 ? y2 / 100 : 0.3} // better to do with angle
+        anchor={player ? [0.5, 0.8] : [0.5, 0.32]}
+        x={player && scaleRatio >= 0.5 ? 60 : 90}
+        y={scaleRatio < 0.5 ? y2 - 25 : y2 + 20}
+        rotation={y2 > 0 ? y2 / 100 : scaleRatio < 0.5 ? 0 : 0.3}
       >
       </Sprite>
     </Container>

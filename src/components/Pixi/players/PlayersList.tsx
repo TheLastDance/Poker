@@ -1,13 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import rootStore from "../../../mobX";
 import PokerPlayer from "./Player";
 import { Container, useTick } from "@pixi/react";
-import { IAppSize, IContainer } from "../../../types";
+import { IAppSize } from "../../../types";
 import Bets from "./Bets";
 import Stats from "../Stats";
+import { observer } from "mobx-react-lite";
 
-// let i = 0;
-const PlayerList: React.FC<IAppSize> = (props) => {
+let i = 0;
+const PlayerList: React.FC<IAppSize> = observer((props) => {
   const { gameStore, dataStore } = rootStore;
   const { startCardsAnimation } = dataStore;
   const { players } = gameStore;
@@ -19,6 +20,7 @@ const PlayerList: React.FC<IAppSize> = (props) => {
   const [changeCard, setChangeCard] = useState(false);
 
   useTick((delta) => {
+    i += 2 * delta;
     setSpeed(prev => prev + 2.7 * delta);
 
     if (y <= 0 && !changeCard) {
@@ -32,19 +34,21 @@ const PlayerList: React.FC<IAppSize> = (props) => {
     }
 
     if (y > 0 && startCardsAnimation) {
-      setY(prev => prev - speed);
+      setY(prev => prev - i * delta);
     }
-    else if (y2 > 0 && startCardsAnimation) {
-      setY2(prev => prev - speed);
+    else if (y2 > 0 && changeCard) {
+      setY2(prev => prev - i * delta);
     }
 
     if (!startCardsAnimation) {
+      i = 0;
       setSpeed(0);
       setY(3000);
       setY2(3000);
       setChangeCard(false);
     }
   });
+
 
   return (
     <>
@@ -75,6 +79,6 @@ const PlayerList: React.FC<IAppSize> = (props) => {
       <Stats size={size} scaleRatio={scaleRatio} y2={y2} />
     </>
   )
-}
+})
 
 export default PlayerList;

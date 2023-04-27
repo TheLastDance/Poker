@@ -2,7 +2,7 @@ import React from "react";
 import { Container, Text, Sprite } from "@pixi/react";
 import { IAppSize } from "../../types";
 import rootStore from "../../mobX";
-import { style, outline } from "./styles";
+import { statsStyle } from "./styles";
 import { observer } from "mobx-react-lite";
 import { Player } from "../../mobX/playerStore";
 
@@ -13,12 +13,14 @@ const Stats: React.FC<IAppSize & { y2: number; }> = observer((props) => {
   const bestHand = comb.bestHand;
 
   return (
-    <Container>
+    <Container
+      x={10 * scaleRatio}
+    >
       <Container>
         <Text
           scale={scaleRatio}
           text={`HANDS PLAYED: ${dataStore.handsCount}`}
-          style={style}
+          style={statsStyle}
         />
       </Container>
       {gameStore.players[0] instanceof Player && y2 <= 0 &&
@@ -28,14 +30,14 @@ const Stats: React.FC<IAppSize & { y2: number; }> = observer((props) => {
           scale={scaleRatio}
         >
           <Container
-            scale={0.25}
-            filters={[outline(scaleRatio)]}
+            x={0}
+            scale={0.3}
           >
             {bestHand.map((item, index) =>
               <Sprite
-                x={index * 250}
+                x={index * 240}
                 y={-150}
-                anchor={[-0.1, 0]}
+                anchor={[0, 0]}
                 key={`${item.value}${item.suit}`}
                 image={bestHand[index].image}
               />)}
@@ -44,8 +46,8 @@ const Stats: React.FC<IAppSize & { y2: number; }> = observer((props) => {
           <Container>
             <Text
               y={50}
-              text={`YOUR COMBINATION: ${comb.combination}`}
-              style={style}
+              text={`Combination: ${comb.combination}`}
+              style={statsStyle}
             />
           </Container>
 

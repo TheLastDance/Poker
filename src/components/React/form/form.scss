@@ -22,3 +22,10 @@
         }
     }
 }
+
+@media(max-width:500px) {
+    .form {
+        width: fit-content;
+        height: fit-content;
+    }
+}

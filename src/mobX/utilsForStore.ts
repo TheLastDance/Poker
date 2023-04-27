@@ -1,4 +1,4 @@
-import { IBot, ICombination, IPlayer, TurnsEnum } from "../types";
+import { IBot, ICombination, IPlayer, TurnsEnum, IMoneyWinners } from "../types";
 import gameStore from "./gameStore";
 const { fold, allIn } = TurnsEnum;
 
@@ -65,3 +65,28 @@ export function giveBack(arr: (IBot | IPlayer)[], playersMaxBet: (IBot | IPlayer
     return item;
   });
 }
+
+export function showdownTime(arr: (IBot | IPlayer)[]): number {
+  const quantity = arr.filter(item => item.turn !== fold).length;
+  let minTime = 5000;
+
+  if (quantity !== 2) {
+    const addedTime = String(quantity - 2) + "000";
+    minTime = minTime + Number(addedTime);
+    return minTime;
+  } else {
+    return minTime;
+  }
+} // this function will generate time for showdown stage where player will be able to check combinations of other players at the showdown.
+// after this time showdown will be ended and winner will take a bank. Idea of this function is to give more time for showdown if there are more players on this stage.
+// if there are min quantity - 2, time will be 5sec, if other quantity time will be increased by 1sec for each + 1player.
+
+export function checkMoneyWinners(arr: IMoneyWinners[], id: number, amount: number): IMoneyWinners[] {
+  const filtered = arr.filter(item => item.id === id);
+  if (filtered.length === 1) {
+    return arr.map(item => item.id === id ? ({ ...item, winningAmount: item.winningAmount + amount }) : item);
+  } else {
+    arr.push({ id: id, winningAmount: amount });
+    return arr;
+  }
+} // with this function moneyWinners array from gameStore will be updated, we need this to show amount of winners winnings.

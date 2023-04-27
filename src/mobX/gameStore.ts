@@ -2,9 +2,28 @@ import { makeAutoObservable, reaction, action, runInAction } from "mobx";
 import formStore from "./formStore";
 import { Bot } from "./botStore";
 import dataStore from "./dataStore";
-import { IFormStore, IDataStore, IBot, IGameStore, ICardsForPlay, IPlayer, TurnsEnum, ICombination } from "../types";
+import {
+  IFormStore,
+  IDataStore,
+  IBot,
+  IGameStore,
+  ICardsForPlay,
+  IPlayer,
+  TurnsEnum,
+  ICombination,
+  IMoneyWinners
+} from "../types";
+import {
+  handleTurn,
+  allFold,
+  sameBids,
+  checkAllIns,
+  potAmount,
+  giveBack,
+  showdownTime,
+  checkMoneyWinners
+} from "./utilsForStore";
 import { Player } from "./playerStore";
-import { handleTurn, allFold, sameBids, checkAllIns, potAmount, giveBack } from "./utilsForStore";
 import { checkWinner } from "../Utils/winnerCheck";
 
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
@@ -21,6 +40,7 @@ export class Game implements IGameStore {
   board: ICardsForPlay[] = [];
   isGameOver = false;
   isShowDown = false;
+  moneyWinners: IMoneyWinners[] = [];
   boardAnimation = false;
   formStore: IFormStore;
   dataStore: IDataStore;
@@ -41,7 +61,7 @@ export class Game implements IGameStore {
         this.updateRaise();
       })
     reaction(
-      () => this.formStore.isStarted && this.dataStore.assetsLoaded, // changed it should to be careful, not sure how it works
+      () => this.formStore.isStarted && this.dataStore.assetsLoaded, // when assets/data are preloaded and button is pressed runs this code, which builds array of players.
       async () => {
         this.addPlayers();
         this.blind();
@@ -86,14 +106,14 @@ export class Game implements IGameStore {
         this.blind();
         this.cardDistribution();
         if (!this.isGameOver) await this.decision();
-      }, { delay: 1000 }
+      }, { delay: 2000 }
     );
   }
 
   async handleCall() {
     this.players = handleTurn(this.players, call);
     const player = this.players[0];
-    player.callCalculation();
+    if (player instanceof Player) player.playerCallCalculation();
     await this.decision();
   }
 
@@ -120,7 +140,7 @@ export class Game implements IGameStore {
 
   handleRaise(): void {
     const player = this.players[0];
-    player.raiseCalculation();
+    if (player instanceof Player) player.playerRaiseCalculation();
     if (player.stack > 0) {
       this.players = handleTurn(this.players, raise);
     } else {
@@ -134,6 +154,7 @@ export class Game implements IGameStore {
     this.round = "pre-flop";
     console.log("clear round", this.round);
     this.board = [];
+    this.moneyWinners = [];
     this.maxBet = this.bigBlindCost;
     this.isShowDown = false;
     this.boardAnimation = false;
@@ -177,6 +198,8 @@ export class Game implements IGameStore {
         const player = this.players[index];
         if (player.turn === allIn && playersMaxBet[0].betSum !== player.betSum) { // low all-in winning block
           if (playersMaxBet[0].betSum !== playersMaxBet[1].betSum && !returnedMaxBetRemainder) {
+            const remainder = playersMaxBet[0].betSum - playersMaxBet[1].betSum;
+            this.moneyWinners = checkMoneyWinners(this.moneyWinners, playersMaxBet[0].id, remainder);
             giveBack(this.players, playersMaxBet);
             returnedMaxBetRemainder = true;
           }; // returns remaining of bet
@@ -187,15 +210,22 @@ export class Game implements IGameStore {
           stayedInGame = this.players.filter(item => item.turn !== fold && item.id !== arr[0].id && item.betSum > 0)
             .map(item => item.combination());
 
+          this.moneyWinners = checkMoneyWinners(this.moneyWinners, player.id, winningAmount); // save winner and his amount in array to show it in UI.
+
           if (stayedInGame.length > 0) winnerCalculations(checkWinner(stayedInGame));
         } else {
+          this.moneyWinners = checkMoneyWinners(this.moneyWinners, player.id, this.bank);
+          console.log(this.moneyWinners);
+
           player.winner();
         }
       } else {
-        playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum); // maybe need to do this with winners array.
+        playersMaxBet = [...this.players].sort((a, b) => b.betSum - a.betSum);
         const lowAllInCheck = arr.some(item => playersMaxBet[0].betSum !== item.betSum);
         if (lowAllInCheck) { // low all-in split-pot block
           if (playersMaxBet[0].betSum !== playersMaxBet[1].betSum && !returnedMaxBetRemainder) {
+            const remainder = playersMaxBet[0].betSum - playersMaxBet[1].betSum;
+            this.moneyWinners = checkMoneyWinners(this.moneyWinners, playersMaxBet[0].id, remainder);
             giveBack(this.players, playersMaxBet);
             returnedMaxBetRemainder = true;
           };
@@ -215,6 +245,7 @@ export class Game implements IGameStore {
           for (let i = 0; i < arr.length; i++) {
             const indexOfWinnerID = this.players.findIndex(item => item.id === arr[i].id);
             this.players[indexOfWinnerID].winnerByLowAllIn(winningAmount * percentArr[i] / 100);
+            this.moneyWinners = checkMoneyWinners(this.moneyWinners, this.players[indexOfWinnerID].id, winningAmount * percentArr[i] / 100);
           }
 
           stayedInGame = this.players.filter(item => item.turn !== fold && item.id !== arr[0].id && item.betSum > 0)
@@ -225,6 +256,7 @@ export class Game implements IGameStore {
         } else {
           for (const player of arr) {
             const indexOfWinnerID = this.players.findIndex(item => item.id === player.id);
+            this.moneyWinners = checkMoneyWinners(this.moneyWinners, player.id, this.bank / arr.length);
             this.players[indexOfWinnerID].splitPot(arr.length);
           }
         }
@@ -282,20 +314,22 @@ export class Game implements IGameStore {
     player.isMoving = false;
     const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
     const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
-    runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; }) // MAKE AS ACTION
+    runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; });
     console.log("mainCheck");
 
 
     if (this.round === "finish") {
       console.log("was in isSame", this.round);
       console.log("finish 1");
+      const time = showdownTime(this.players);
       runInAction(() => { this.isShowDown = true });
-      await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), 5000));
+      await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), time));
 
       console.log("finish 2");
       runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
     }
   }
+
 
   private async decision() {
     let counter = 0;
@@ -308,7 +342,10 @@ export class Game implements IGameStore {
 
       if (allFold(this.players)) {
         console.log("folded");
-        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
+        const winnerIndex = this.players.findIndex(item => item.turn !== fold);
+        console.log(this.moneyWinners);
+        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 1000));
+        this.moneyWinners.push({ id: this.players[winnerIndex].id, winningAmount: this.bank });
         return;
       }
 
@@ -329,7 +366,10 @@ export class Game implements IGameStore {
 
       if (allFold(this.players)) { // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
         console.log("folded");
-        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 2000));
+        const winnerIndex = this.players.findIndex(item => item.turn !== fold);
+        console.log(this.moneyWinners);
+        await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 1000));
+        this.moneyWinners.push({ id: this.players[winnerIndex].id, winningAmount: this.bank });
         return;
       }
       // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.

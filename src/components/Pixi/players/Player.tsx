@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { Container, Text, useTick, Sprite } from "@pixi/react";
-import { IBot, IContainer, IPlayer } from "../../../types";
+import { IBot, IContainer, IPlayer, TurnsEnum } from "../../../types";
 import Hand from "./Hand";
-import { style, movingStyle } from "../styles";
+import { name, movingStyle, money2, turnStyle, statsStyle } from "../styles";
 import rootStore from "../../../mobX";
 import Buttons from "../buttons/Buttons";
 import { Player } from "../../../mobX/playerStore";
@@ -23,10 +23,21 @@ const PokerPlayer: React.FC<IProps> = (props) => {
   const containerRef = useRef<IContainer>(null);
   const { formStore, gameStore } = rootStore;
   const { item, y, y2, scaleRatio, index } = props;
-  const { players } = gameStore;
+  const { players, moneyWinners } = gameStore;
   const { opponents } = formStore;
+  const [x, setX] = useState(0);
 
   const angle = (Math.PI * 2) / (Number(opponents) + 1) * (- item.id);
+  const player = item instanceof Player;
+
+  const exp = gameStore.isShowDown && item.turn !== TurnsEnum.fold;
+  const tookBank = moneyWinners.find(el => item.id === el.id);
+
+  useTick((delta) => {
+    if (moneyWinners.length && tookBank) {
+      setX(prev => prev + 0.12 * delta);
+    }
+  });
 
   return (
     <Container ref={containerRef}
@@ -41,11 +52,11 @@ const PokerPlayer: React.FC<IProps> = (props) => {
           x={0}
           y={0}
           image={item.info.avatar}
-          zIndex={5}
+          visible={player ? false : true}
         />
         {item.turn &&
           <Container
-            x={-100}
+            x={player ? -120 : -100}
             y={+opponents === 4 && item.id === 4 ? -25 : -65}
           >
             <Sprite
@@ -58,20 +69,20 @@ const PokerPlayer: React.FC<IProps> = (props) => {
               text={`${item.turn}`}
               anchor={[0.5, 0]}
               y={-45}
-              style={style}
+              style={turnStyle}
             />
           </Container>}
         <Text
           text={`${item.info.name}`}
           anchor={[0.5, 1]}
-          pivot={[0, 145]}
-          style={item.isMoving ? movingStyle : style}
+          y={player ? -145 : -140}
+          style={item.isMoving ? movingStyle : name}
         />
         <Text
           text={`${item.stack.toFixed(2)}$`}
           anchor={[0.5, 1]}
-          pivot={[0, 130]}
-          style={style}
+          y={player ? -130 : -125}
+          style={money2}
           scale={1}
         />
 
@@ -81,7 +92,7 @@ const PokerPlayer: React.FC<IProps> = (props) => {
             width={30}
             height={30}
             image={BBchip}
-            x={-70}
+            x={-75}
             y={25}
           />
         }
@@ -92,7 +103,7 @@ const PokerPlayer: React.FC<IProps> = (props) => {
             width={30}
             height={30}
             image={SBchip}
-            x={-70}
+            x={-75}
             y={25}
           />
         }
@@ -103,14 +114,29 @@ const PokerPlayer: React.FC<IProps> = (props) => {
             width={30}
             height={30}
             image={chip}
-            x={-70}
+            x={-75}
             y={25}
           />
         }
 
       </Container>
       <Hand item={item} y={y} y2={y2} index={index} scaleRatio={scaleRatio} />
-      {item.isMoving && item instanceof Player && !gameStore.isGameOver && <Buttons item={item} />}
+      {moneyWinners.length && tookBank ? <Text
+        text={`+${tookBank.winningAmount.toFixed(2)}$`}
+        style={statsStyle}
+        anchor={0.5}
+        y={-100}
+        x={Math.PI / 0.5 * Math.sin(x) + 70}
+      /> : null}
+      {exp &&
+        <Text
+          text={item.combination().combination}
+          style={statsStyle}
+          anchor={[0.5, 0]}
+          y={player && scaleRatio >= 0.5 ? 10 : player && scaleRatio < 0.5 ? -15 : !player && scaleRatio < 0.5 ? 50 : 35}
+        />
+      }
+      {item.isMoving && player && !gameStore.isGameOver && <Buttons item={item} />}
     </Container>
   )
 }

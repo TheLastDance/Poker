@@ -26,6 +26,11 @@ export interface ICombination {
   betSum: number;
 }
 
+export interface IMoneyWinners {
+  id: number;
+  winningAmount: number;
+}
+
 export type valueNumber = Omit<IHand, "value"> & { value: number; };
 
 export enum TurnsEnum {
@@ -102,6 +107,7 @@ export interface IBot {
   turn: TurnsEnum | false;
   isBot: boolean;
   id: number;
+  //turnAnimation: boolean;
   dataStore: IDataStore;
   formStore: IFormStore;
   clearSumOfBets: () => void;
@@ -122,6 +128,8 @@ export interface IBot {
 export interface IPlayer extends IBot {
   //raiseAmount: string;
   raiseInput: (e: number) => void;
+  playerRaiseCalculation: () => void;
+  playerCallCalculation: () => void;
 }
 
 export interface IGameStore {

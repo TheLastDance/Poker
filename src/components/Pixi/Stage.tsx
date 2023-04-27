@@ -27,7 +27,7 @@ const MainStage: React.FC = () => {
   }, [dimensions]);
 
   return (
-    <Stage width={dimensions} height={dimensions} options={{ antialias: true }}>
+    <Stage width={dimensions} height={dimensions} options={{}}>
 
       {dataStore.assetsLoaded ?
         <>

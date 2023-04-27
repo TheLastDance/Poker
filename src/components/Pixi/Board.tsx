@@ -1,17 +1,17 @@
-import React, { useRef, useState } from "react";
-import { Container, Sprite, useTick, Text, withFilters } from "@pixi/react";
-import { IContainer } from "../../types";
+import React, { useState } from "react";
+import { Container, Sprite, useTick, Text } from "@pixi/react";
 import rootStore from "../../mobX";
 import { IAppSize } from "../../types";
-import { style, outline } from "./styles";
+import { style } from "./styles";
+import { observer } from "mobx-react-lite";
 
-const Board: React.FC<IAppSize> = (props) => {
-  const containerRef = useRef<IContainer>(null);
-  const cSize = containerRef.current;
+const Board: React.FC<IAppSize> = observer((props) => {
   const { size, scaleRatio } = props;
   const { gameStore } = rootStore;
   const { board } = gameStore;
   const [x, setX] = useState(0);
+  const [hover, setHover] = useState(false);
+  const cardDistance = 250;
 
   const textArray = [
     `${gameStore.bank.toFixed(2)}$`,
@@ -19,7 +19,7 @@ const Board: React.FC<IAppSize> = (props) => {
   ];
 
   useTick(delta => {
-    if (gameStore.boardAnimation) {
+    if (gameStore.boardAnimation && x <= 750) {
       setX(prev => prev + 8.5 * delta);
     }
     if (!gameStore.boardAnimation) {
@@ -27,8 +27,11 @@ const Board: React.FC<IAppSize> = (props) => {
     }
   });
 
-  //console.log(cSize ? cSize.width : 0);
+  const onHover = () => {
+    setHover(prev => !prev);
+  };
 
+  const exp = hover ? -cardDistance * board.length * 0.4 / 2 * scaleRatio : -cardDistance * board.length * 0.32 / 2 * scaleRatio;
 
   return (
     <Container
@@ -47,22 +50,25 @@ const Board: React.FC<IAppSize> = (props) => {
             anchor={[0.5]}
             style={style}
             y={+style.fontSize * (index + 1)}
-            scale={index === 1 ? 0.6 : 1}
+            scale={index === 1 ? 0.6 : 1.4}
           />
         )}
       </Container>
       <Container
-        filters={[outline(scaleRatio)]}
-        ref={containerRef}
-        scale={0.32 * scaleRatio}
-        x={cSize ? -cSize?.width / 2 : 0}
-        y={cSize ? -cSize?.height / 2 : 0}
+        eventMode="static"
+        cursor="pointer"
+        sortableChildren={true}
+        scale={hover ? 0.4 * scaleRatio : 0.32 * scaleRatio}
+        x={exp}
+        onpointerdown={onHover}
       >
         {board.map((item, index) =>
           <Sprite
             key={index}
             image={item.image}
-            x={x >= index * 250 ? 250 * index : x}
+            anchor={[0, 0.5]}
+            x={x <= index * cardDistance && index < 3 ? x : cardDistance * index}
+            zIndex={index === 0 ? 3 : index === 1 ? 2 : 0}
           >
           </Sprite>
         )}
@@ -71,6 +77,6 @@ const Board: React.FC<IAppSize> = (props) => {
     </Container>
 
   )
-}
+})
 
 export default Board;
