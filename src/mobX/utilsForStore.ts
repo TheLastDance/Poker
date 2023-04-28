@@ -1,3 +1,4 @@
+import { Howl } from "howler";
 import { IBot, ICombination, IPlayer, TurnsEnum, IMoneyWinners } from "../types";
 import gameStore from "./gameStore";
 const { fold, allIn } = TurnsEnum;
@@ -71,7 +72,7 @@ export function showdownTime(arr: (IBot | IPlayer)[]): number {
   let minTime = 5000;
 
   if (quantity !== 2) {
-    const addedTime = String(quantity - 2) + "000";
+    const addedTime = `${String(quantity - 2)}000"`;
     minTime = minTime + Number(addedTime);
     return minTime;
   } else {
@@ -90,3 +91,9 @@ export function checkMoneyWinners(arr: IMoneyWinners[], id: number, amount: numb
     return arr;
   }
 } // with this function moneyWinners array from gameStore will be updated, we need this to show amount of winners winnings.
+
+export function soundController(isOn: boolean, sound: Howl): void {
+  if (isOn) {
+    sound.play();
+  }
+}

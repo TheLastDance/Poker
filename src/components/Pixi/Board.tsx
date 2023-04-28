@@ -69,8 +69,7 @@ const Board: React.FC<IAppSize> = observer((props) => {
             anchor={[0, 0.5]}
             x={x <= index * cardDistance && index < 3 ? x : cardDistance * index}
             zIndex={index === 0 ? 3 : index === 1 ? 2 : 0}
-          >
-          </Sprite>
+          />
         )}
       </Container>
 

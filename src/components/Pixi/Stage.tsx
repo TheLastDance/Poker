@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Board from './Board';
 import Background from './Background';
 import PlayerList from './players/PlayersList';
+import Icons from './Icons';
 import Spinner from './Spinner';
 import rootStore from '../../mobX';
 
@@ -34,6 +35,7 @@ const MainStage: React.FC = () => {
           <Background size={dimensions} />
           <PlayerList size={dimensions} scaleRatio={scaleRatio} />
           <Board size={dimensions} scaleRatio={scaleRatio} />
+          <Icons size={dimensions} scaleRatio={scaleRatio} />
         </> :
         <Spinner size={dimensions} scaleRatio={scaleRatio} />}
 

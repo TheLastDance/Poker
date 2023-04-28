@@ -24,8 +24,56 @@ import btn_black from "../assets/btn_black.png";
 import btn_green from "../assets/btn_green.png";
 import btn_orange from "../assets/btn_orange.png";
 import btn_blue from "../assets/btn_blue.png";
+import sound_icon from "../assets/sound.png";
+import no_sound_icon from "../assets/no-sound.png";
+import music_icon from "../assets/music.png";
+import no_music_icon from "../assets/no-music.png";
+import rules from "../assets/rules.jpg";
+import cards_rules from "../assets/cards-rules.png";
+// @ts-ignore to avoid ts error of unknown module
+import call_sound from "../assets/call.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import raise_sound from "../assets/raise.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import fold_sound from "../assets/fold.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import check_sound from "../assets/check.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import all_in_sound from "../assets/all-in.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import shuffle from "../assets/shuffle.mp3";
+import { Howl } from "howler";
+import { TurnsEnum } from "../types";
+const { call, raise, fold, check, allIn } = TurnsEnum
 
+export const sounds = {
+  [call]: new Howl({
+    src: call_sound as string,
+  }),
 
+  [raise]: new Howl({
+    src: raise_sound as string,
+  }),
+
+  [allIn]: new Howl({
+    src: all_in_sound as string,
+  }),
+
+  [fold]: new Howl({
+    src: fold_sound as string,
+  }),
+
+  [check]: new Howl({
+    src: check_sound as string,
+  }),
+}
+
+export const shuffle_sound = new Howl({
+  volume: 0.8,
+  src: shuffle as string,
+});
+
+// sounds.play()
 
 export const assetsNames = [
   "background",
@@ -54,6 +102,12 @@ export const assetsNames = [
   "btn_green",
   "btn_orange",
   "btn_blue",
+  "sound_icon",
+  "no_sound_icon",
+  "music_icon",
+  "no_music_icon",
+  "rules",
+  "cards_rules"
 ]
 
 export const assetsUrls = [
@@ -83,4 +137,10 @@ export const assetsUrls = [
   btn_green,
   btn_orange,
   btn_blue,
+  sound_icon,
+  no_sound_icon,
+  music_icon,
+  no_music_icon,
+  rules,
+  cards_rules
 ]

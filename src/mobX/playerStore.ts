@@ -20,7 +20,7 @@ export class Player extends Bot implements IPlayer {
     gameStore.playerRaiseAmount = e;
   }
 
-  playerCallCalculation() {
+  playerCallCalculation(): void {
     if (gameStore.maxBet < this.stack + this.bet) {
       this.turn = call;
       this.stack -= gameStore.maxBet - this.bet;

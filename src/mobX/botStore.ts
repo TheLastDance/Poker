@@ -5,6 +5,8 @@ import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum, I
 import { checkCombination } from "../Utils/combinationCheck";
 import { runInAction } from "mobx";
 import { botInfo } from "../data/botInfoData";
+import { sounds } from "../data/assetsData";
+import { soundController } from "./utilsForStore";
 
 const { fold, call, check, raise, allIn } = TurnsEnum;
 
@@ -92,6 +94,7 @@ export class Bot implements IBot {
 
       if (random < 0.1) {
         this.turn = fold;
+        soundController(this.dataStore.isSoundOn, sounds.fold);
         return;
       }
       else if (random >= 0.2 && random < 0.7 && this.bet < gameStore.maxBet) {
@@ -100,12 +103,14 @@ export class Bot implements IBot {
       }
       else if (random >= 0.2 && this.bet === gameStore.maxBet) {
         this.turn = check;
+        soundController(this.dataStore.isSoundOn, sounds.check);
         return;
       } else if (random > 0.5) {
         this.raiseCalculation();
         return;
       } else {
         this.turn = fold;
+        soundController(this.dataStore.isSoundOn, sounds.fold);
       }
     })
   }
@@ -122,8 +127,10 @@ export class Bot implements IBot {
       runInAction(() => gameStore.bank += gameStore.maxBet - this.bet);
       this.betSum += gameStore.maxBet - this.bet;
       this.bet += gameStore.maxBet - this.bet;
+      soundController(this.dataStore.isSoundOn, sounds.call);
     } else {
       this.allInCalculation();
+      soundController(this.dataStore.isSoundOn, sounds["All-in"]);
     }
   }
 
@@ -155,9 +162,11 @@ export class Bot implements IBot {
       runInAction(() => {
         gameStore.bank += raiseBet * 2;
         gameStore.maxBet = this.bet;
-      })
+      });
+      soundController(this.dataStore.isSoundOn, sounds.raise);
     } else {
       this.allInCalculation();
+      soundController(this.dataStore.isSoundOn, sounds["All-in"]);
       if (gameStore.maxBet < this.bet) gameStore.maxBet = this.bet;
     }
   }

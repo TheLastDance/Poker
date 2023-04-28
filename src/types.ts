@@ -76,6 +76,8 @@ export interface IDataStore {
   cardsForPlay: ICardsForPlay[];
   handsCount: number;
   assetsLoaded: boolean;
+  isSoundOn: boolean;
+  isMusicOn: boolean;
   selectCards(): ICardsForPlay[];
   onProgress(progress: number): number;
   fetch(): void;

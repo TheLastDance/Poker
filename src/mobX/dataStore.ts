@@ -4,6 +4,7 @@ import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
 import { assetsUrls, assetsNames } from "../data/assetsData";
 import clicker from "../assets/ace.png";
+import { shuffle_sound } from "../data/assetsData";
 
 const CARD_VALUES: { [key: string]: string; } = {
   ACE: "14",
@@ -19,10 +20,15 @@ class Data implements IDataStore {
   assetsLoaded = false;
   progress = 0;
   startCanvasRender = false;
+  isSoundOn = true;
+  isMusicOn = true;
   startCardsAnimation = false;
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      handleSound: action.bound,
+      handleMusic: action.bound,
+    });
     reaction(
       () => this.cards,
       () => {
@@ -36,6 +42,20 @@ class Data implements IDataStore {
         this.startCardsAnimation = false;
       }
     );
+    reaction(
+      () => this.startCardsAnimation,
+      () => {
+        if (this.startCardsAnimation && this.isSoundOn) shuffle_sound.play();
+      }
+    )
+  }
+
+  handleSound() {
+    this.isSoundOn = !this.isSoundOn;
+  }
+
+  handleMusic() {
+    this.isMusicOn = !this.isMusicOn;
   }
 
   selectCards() {
