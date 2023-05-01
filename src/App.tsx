@@ -1,4 +1,3 @@
-import * as mobx from 'mobx';
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import './App.scss';
@@ -23,7 +22,7 @@ const App: React.FC = observer(() => {
   console.log(dataStore.cardsForPlay);
 
   return (
-    <div className="App">
+    <div className={!isStarted ? "App" : "App removeBackground"}>
       {!isStarted ? <Form /> :
         dataStore.startCanvasRender ?
           <AppProvider value={app}>

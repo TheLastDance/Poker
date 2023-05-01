@@ -11,7 +11,8 @@ import {
   IPlayer,
   TurnsEnum,
   ICombination,
-  IMoneyWinners
+  IMoneyWinners,
+  RoundEnum
 } from "../types";
 import {
   handleTurn,
@@ -28,13 +29,14 @@ import { checkWinner } from "../Utils/winnerCheck";
 
 type BooleanKeysOfIBot = keyof Pick<IBot, { [K in keyof IBot]: IBot[K] extends boolean ? K : never }[keyof IBot]>;
 const { fold, call, check, raise, allIn } = TurnsEnum;
+const { pre_flop, flop, turn, river, finish } = RoundEnum;
 
 export class Game implements IGameStore {
   players: IBot[] | IPlayer[] = [];
   bigBlindCost = 2;
   smallBlindCost = 1;
   bank = 0;
-  round = "pre-flop";
+  round = pre_flop;
   maxBet = this.bigBlindCost;
   playerRaiseAmount = 0;
   board: ICardsForPlay[] = [];
@@ -71,7 +73,7 @@ export class Game implements IGameStore {
     reaction(
       () => this.round,
       async (round) => {
-        if (round === "flop") {
+        if (round === flop) {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 3);
@@ -79,7 +81,7 @@ export class Game implements IGameStore {
           this.makeMove();
           await this.decision(); // this working recursively when round changes
         }
-        else if (round === "turn") {
+        else if (round === turn) {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 4);
@@ -151,7 +153,7 @@ export class Game implements IGameStore {
 
   private clearStoreStates() {
     this.bank = 0;
-    this.round = "pre-flop";
+    this.round = pre_flop;
     console.log("clear round", this.round);
     this.board = [];
     this.moneyWinners = [];
@@ -284,7 +286,7 @@ export class Game implements IGameStore {
   } // will rise blinds after each 10 hands
 
   private makeMove() {
-    if (this.round === "pre-flop") {
+    if (this.round === pre_flop) {
       const index = this.players.findIndex(item => item.bigBlind);
       this.circleIteration(index, "isMoving");
 
@@ -305,20 +307,20 @@ export class Game implements IGameStore {
     this.players[winnerIndex].winner();
     player.isMoving = false;
     console.log(this.round);
-    this.round = "finish";
+    this.round = finish;
     this.dataStore.handsCount++;
     console.log(this.round);
   }
 
   private async roundChange(player: IBot | IPlayer) {
     player.isMoving = false;
-    const rounds = ["pre-flop", "flop", "turn", "river", "finish"]; // should be enum istead of strings, to avoid typo.
+    const rounds = [pre_flop, flop, turn, river, finish]; // should be enum istead of strings, to avoid typo.
     const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
     runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; });
     console.log("mainCheck");
 
 
-    if (this.round === "finish") {
+    if (this.round === finish) {
       console.log("was in isSame", this.round);
       console.log("finish 1");
       const time = showdownTime(this.players);
@@ -375,12 +377,12 @@ export class Game implements IGameStore {
       // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
       // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
 
-      if (this.round === "pre-flop" && player.bigBlind) {
+      if (this.round === pre_flop && player.bigBlind) {
         const isSame = sameBids(this.players);
         if (isSame) {
           if (player.turn) {
             player.isMoving = false;
-            runInAction(() => this.round = "flop"); // this will run this function again in reaction, so this block will be returned at the end.
+            runInAction(() => this.round = flop); // this will run this function again in reaction, so this block will be returned at the end.
           }
           console.log("was in isSame", this.round);
           return;
@@ -390,7 +392,7 @@ export class Game implements IGameStore {
       // if all persons who did not folded have the same bets, if yes, bidding round will be over and recursion also be over, if not we will run this function again
       // until all persons will fold except last one, or until there will be same bets.
 
-      if (this.round !== "pre-flop" && player.isDiller) {
+      if (this.round !== pre_flop && player.isDiller) {
         const isSame = sameBids(this.players);
 
         if (isSame) {

@@ -1,13 +1,60 @@
-@import "resets";
+@import "resets", "fonts";
+
+:root {
+    --vh: 100;
+    --fs: 25px;
+    --fc: #fff;
+    --ff: 'Russo One';
+    --inputMargin: 5px 0 15px 0;
+    --formBackground: #141414e8;
+}
 
 body {
-    background-color: rgb(129, 129, 129);
     overflow: hidden;
+    height: 100%;
+    font-size: var(--fs);
+    background: #43544e; // fallback for old browsers 
+    background: linear-gradient(to bottom right,
+            #2f005c,
+            #260049,
+            #230044,
+            #110030,
+            #0c0016,
+            #040008 70%); // W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ 
 }
 
 .App {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: auto;
+    background: url("assets/css/girl.png");
+    background-size: 550px;
+    background-repeat: no-repeat;
+    background-position: bottom right;
     height: 100vh;
+    height: 100svh;
+    font-family: var(--ff);
+}
+
+.removeBackground {
+    background: unset;
+}
+
+@media (max-width:980px) {
+    .App {
+        background: unset;
+    }
+}
+
+@media (max-width:500px) {
+    :root {
+        --fs: 20px;
+    }
+}
+
+@media (max-height:350px) {
+    :root {
+        --fs: 20px;
+    }
 }

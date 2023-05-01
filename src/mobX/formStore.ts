@@ -1,5 +1,6 @@
 import { makeAutoObservable, action } from "mobx";
 import { IFormStore } from "../types";
+import { music_sound } from "../data/assetsData";
 
 class Form implements IFormStore {
   isStarted = false;
@@ -19,6 +20,7 @@ class Form implements IFormStore {
   start(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     this.isStarted = true;
+    music_sound.play();
   }
 
   changeName(e: React.ChangeEvent<HTMLInputElement>) {

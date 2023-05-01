@@ -4,7 +4,7 @@ import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
 import { assetsUrls, assetsNames } from "../data/assetsData";
 import clicker from "../assets/ace.png";
-import { shuffle_sound } from "../data/assetsData";
+import { shuffle_sound, music_sound } from "../data/assetsData";
 
 const CARD_VALUES: { [key: string]: string; } = {
   ACE: "14",
@@ -46,6 +46,16 @@ class Data implements IDataStore {
       () => this.startCardsAnimation,
       () => {
         if (this.startCardsAnimation && this.isSoundOn) shuffle_sound.play();
+      }
+    );
+    reaction(
+      () => this.isMusicOn,
+      () => {
+        if (!this.isMusicOn) {
+          music_sound.pause();
+        } else {
+          music_sound.play();
+        }
       }
     )
   }

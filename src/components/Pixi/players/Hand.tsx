@@ -31,11 +31,11 @@ const Hand: React.FC<IProps> = observer((props) => {
         x={player ? 30 : 0}
         anchor={player ? [0.5, 0.8] : [0.5, 0.32]}
         rotation={y > 0 ? y / 100 : scaleRatio < 0.5 ? 0 : -0.15}
-        image={exp ? item.hand[0].image : card_back}
+        image={item.hand[0].image}
       >
       </Sprite>
       <Sprite
-        image={exp ? item.hand[1].image : card_back}
+        image={item.hand[1].image}
         anchor={player ? [0.5, 0.8] : [0.5, 0.32]}
         x={player && scaleRatio >= 0.5 ? 60 : 90}
         y={scaleRatio < 0.5 ? y2 - 25 : y2 + 20}

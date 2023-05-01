@@ -41,6 +41,14 @@ export enum TurnsEnum {
   allIn = "All-in"
 }
 
+export enum RoundEnum {
+  pre_flop = "pre-flop",
+  flop = "flop",
+  turn = "turn",
+  river = "river",
+  finish = "finish"
+}
+
 export enum CombinationEnum {
   RoyalFlush = "Royal Flush",
   StraightFlush = "Straight Flush",

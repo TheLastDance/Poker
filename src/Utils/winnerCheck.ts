@@ -2,7 +2,7 @@ import { ICombination, CombinationEnum } from "../types";
 
 const { RoyalFlush, HighCard, Flush, FullHouse, FourofaKind, ThreeofaKind, TwoPair, Straight, StraightFlush, OnePair } = CombinationEnum;
 
-const POKER_RANKINGS = {
+export const POKER_RANKINGS = {
   [RoyalFlush]: 9,
   [StraightFlush]: 8,
   [FourofaKind]: 7,

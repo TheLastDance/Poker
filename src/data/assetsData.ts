@@ -42,6 +42,8 @@ import check_sound from "../assets/check.mp3";
 import all_in_sound from "../assets/all-in.mp3";
 // @ts-ignore to avoid ts error of unknown module
 import shuffle from "../assets/shuffle.mp3";
+// @ts-ignore to avoid ts error of unknown module
+import music from "../assets/music.mp3";
 import { Howl } from "howler";
 import { TurnsEnum } from "../types";
 const { call, raise, fold, check, allIn } = TurnsEnum
@@ -64,6 +66,7 @@ export const sounds = {
   }),
 
   [check]: new Howl({
+    volume: 2.5,
     src: check_sound as string,
   }),
 }
@@ -73,7 +76,12 @@ export const shuffle_sound = new Howl({
   src: shuffle as string,
 });
 
-// sounds.play()
+export const music_sound = new Howl({
+  volume: 0.1,
+  src: music as string,
+  loop: true,
+});
+
 
 export const assetsNames = [
   "background",

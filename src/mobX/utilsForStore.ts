@@ -1,5 +1,5 @@
 import { Howl } from "howler";
-import { IBot, ICombination, IPlayer, TurnsEnum, IMoneyWinners } from "../types";
+import { IBot, ICombination, IPlayer, TurnsEnum, IMoneyWinners, ICardsForPlay } from "../types";
 import gameStore from "./gameStore";
 const { fold, allIn } = TurnsEnum;
 
@@ -69,10 +69,10 @@ export function giveBack(arr: (IBot | IPlayer)[], playersMaxBet: (IBot | IPlayer
 
 export function showdownTime(arr: (IBot | IPlayer)[]): number {
   const quantity = arr.filter(item => item.turn !== fold).length;
-  let minTime = 5000;
+  let minTime = 10000;
 
   if (quantity !== 2) {
-    const addedTime = `${String(quantity - 2)}000"`;
+    const addedTime = `${(quantity - 2) * 2}000`;
     minTime = minTime + Number(addedTime);
     return minTime;
   } else {
@@ -80,7 +80,7 @@ export function showdownTime(arr: (IBot | IPlayer)[]): number {
   }
 } // this function will generate time for showdown stage where player will be able to check combinations of other players at the showdown.
 // after this time showdown will be ended and winner will take a bank. Idea of this function is to give more time for showdown if there are more players on this stage.
-// if there are min quantity - 2, time will be 5sec, if other quantity time will be increased by 1sec for each + 1player.
+// if there are min quantity - 2, time will be 10sec, if other quantity - time will be increased by 2sec for each + 1player.
 
 export function checkMoneyWinners(arr: IMoneyWinners[], id: number, amount: number): IMoneyWinners[] {
   const filtered = arr.filter(item => item.id === id);
@@ -92,8 +92,41 @@ export function checkMoneyWinners(arr: IMoneyWinners[], id: number, amount: numb
   }
 } // with this function moneyWinners array from gameStore will be updated, we need this to show amount of winners winnings.
 
-export function soundController(isOn: boolean, sound: Howl): void {
+export function soundController(isOn: boolean, sound: () => number | Howl): void {
   if (isOn) {
-    sound.play();
+    sound();
   }
+}
+
+export function checkCloseCards(hand: ICardsForPlay[]): boolean {
+  let soarted = hand.sort((a, b) => Number(b.value) - Number(a.value));
+  let difference = Number(soarted[0].value) - Number(soarted[1].value);
+
+  if (difference <= 3 && difference > 0) {
+    return true
+  }
+  return false;
+}
+
+export function checkSumCards(hand: ICardsForPlay[]): number {
+  const reduce = hand.reduce((accum, item) => accum + Number(item.value), 0);
+  const isPair = hand.every(item => item.value === hand[0].value);
+  if (reduce > 15 && reduce <= 20) {
+    if (isPair) return 0.2; //bonus points for pair
+    if (+hand[0].value >= 13 || +hand[1].value >= 13) return 0.15;
+    return 0.1;
+  }
+  if (reduce > 20 && reduce <= 25) {
+    if (isPair) return 0.35;
+    return 0.2;
+  }
+  if (reduce > 25) {
+    if (isPair) return 0.45;
+    return 0.3;
+  }
+  return 0;
+}
+
+export function checkSuitsCards(hand: ICardsForPlay[]): boolean {
+  return hand.every(item => item.suit === hand[0].suit);
 }

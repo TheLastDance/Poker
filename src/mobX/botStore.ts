@@ -1,14 +1,17 @@
 import dataStore from "./dataStore";
 import formStore from "./formStore";
 import gameStore from "./gameStore";
-import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum, IBotInfo } from "../types";
+import { ICardsForPlay, IFormStore, IDataStore, IBot, ICombination, TurnsEnum, IBotInfo, RoundEnum } from "../types";
 import { checkCombination } from "../Utils/combinationCheck";
 import { runInAction } from "mobx";
 import { botInfo } from "../data/botInfoData";
 import { sounds } from "../data/assetsData";
 import { soundController } from "./utilsForStore";
+import { POKER_RANKINGS } from "../Utils/winnerCheck";
+import { checkCloseCards, checkSumCards, checkSuitsCards } from "./utilsForStore";
 
 const { fold, call, check, raise, allIn } = TurnsEnum;
+const { pre_flop, finish } = RoundEnum;
 
 
 // not mobX class
@@ -29,10 +32,9 @@ export class Bot implements IBot {
   turn: TurnsEnum | false = false;
   isBot = true;
   id = 0;
-  //turnAnimation = false;
   dataStore: IDataStore;
   formStore: IFormStore;
-  // private random = 0.1;
+  private bluffCoef = Math.random() + 0.5; // risk coef should be from 0.5 to 1.5 to increase or decrease hand power
 
   // low all-in and all-in split pots was tested with argument inside constructor, where we could put specific hand to mock specific situation.
   constructor() {
@@ -51,7 +53,7 @@ export class Bot implements IBot {
     this.bet = 0;
     this.isMoving = false;
 
-    if (this.turn !== fold && this.turn !== allIn || gameStore.round === "finish") {
+    if (this.turn !== fold && this.turn !== allIn || gameStore.round === finish) {
       console.log("clear turn!!!");
       this.turn = false;
     }
@@ -88,31 +90,97 @@ export class Bot implements IBot {
 
   ai(): void { //changed
     runInAction(() => {
-      //const comb = this.combination().bestHand;
+      const comb = this.combination();
       const random = Math.random();
-      // better to make a getter function with returns
 
-      if (random < 0.1) {
-        this.turn = fold;
-        soundController(this.dataStore.isSoundOn, sounds.fold);
-        return;
-      }
-      else if (random >= 0.2 && random < 0.7 && this.bet < gameStore.maxBet) {
-        this.callCalculation();
-        return;
-      }
-      else if (random >= 0.2 && this.bet === gameStore.maxBet) {
-        this.turn = check;
-        soundController(this.dataStore.isSoundOn, sounds.check);
-        return;
-      } else if (random > 0.5) {
-        this.raiseCalculation();
-        return;
+
+      let accumulator = 0; // this variable will accumulate inside a number step by step, and then based on that number will make a decision.
+
+      if (gameStore.round === pre_flop) {
+        const sumCards = checkSumCards(this.hand);
+        accumulator += sumCards;
+
+        if (checkCloseCards(this.hand) && sumCards >= 0.1) accumulator += 0.15;
+
+        if (checkCloseCards(this.hand) && sumCards < 0.1) accumulator += 0.1;
+
+        if (checkSuitsCards(this.hand)) accumulator += 0.2;
+
+        if (POKER_RANKINGS[comb.combination] === 1) accumulator += 0.5;
+
+        const maxBetCoef = this.maxbetCoefCalculator(accumulator);
+
+        const test = accumulator * this.bluffCoef * maxBetCoef;
+        console.log(accumulator, maxBetCoef, this.bluffCoef, test);
+
+        this.decisionMaker(test);
       } else {
-        this.turn = fold;
-        soundController(this.dataStore.isSoundOn, sounds.fold);
+        this.decisionMaker(random);
       }
     })
+  }
+
+  maxbetCoefCalculator(acc: number) {
+    const averageBank = Number(this.formStore.playerBank) * (Number(this.formStore.opponents) + 1) / gameStore.players.length;
+    console.log(averageBank);
+
+    let maxBetCoef = 1;
+
+    if (gameStore.maxBet > this.stack + this.bet) {
+      if (this.bet / averageBank > 0.6) {
+        maxBetCoef += 0.2;
+      } else {
+        maxBetCoef -= 0.2;
+      }
+      if (this.bet / this.stack > 1.5) {
+        maxBetCoef += 0.2;
+      } else {
+        maxBetCoef -= 0.2;
+      }
+      if (this.stack / averageBank < 0.35) {
+        maxBetCoef += 0.1;
+      } else {
+        maxBetCoef -= 0.1;
+      }
+    } else {
+      if (this.stack / averageBank < 0.35) {
+        maxBetCoef += 0.1;
+      } else {
+        maxBetCoef -= 0.1;
+      }
+      if (gameStore.maxBet / this.stack > 0.4) {
+        maxBetCoef -= 0.2;
+      } else {
+        maxBetCoef += 0.2;
+      }
+      if (acc > 0.3) {
+        maxBetCoef += 0.2;
+      } else {
+        maxBetCoef -= 0.2;
+      }
+    }
+
+    return maxBetCoef;
+
+  }
+
+  decisionMaker(random: number): void {
+    if (random < 0.15 && this.bet !== gameStore.maxBet) {
+      this.turn = fold;
+      soundController(this.dataStore.isSoundOn, () => sounds.fold.play());
+      return;
+    }
+    else if (random >= 0.15 && random < 0.5 && this.bet < gameStore.maxBet) {
+      this.callCalculation();
+      return;
+    }
+    else if (random >= 0.5) {
+      this.raiseCalculation();
+      return;
+    } else {
+      this.turn = check;
+      soundController(this.dataStore.isSoundOn, () => sounds.check.play());
+    }
   }
 
   async callCalculation() {
@@ -127,10 +195,10 @@ export class Bot implements IBot {
       runInAction(() => gameStore.bank += gameStore.maxBet - this.bet);
       this.betSum += gameStore.maxBet - this.bet;
       this.bet += gameStore.maxBet - this.bet;
-      soundController(this.dataStore.isSoundOn, sounds.call);
+      soundController(this.dataStore.isSoundOn, () => sounds.call.play());
     } else {
       this.allInCalculation();
-      soundController(this.dataStore.isSoundOn, sounds["All-in"]);
+      soundController(this.dataStore.isSoundOn, () => sounds["All-in"].play());
     }
   }
 
@@ -163,10 +231,10 @@ export class Bot implements IBot {
         gameStore.bank += raiseBet * 2;
         gameStore.maxBet = this.bet;
       });
-      soundController(this.dataStore.isSoundOn, sounds.raise);
+      soundController(this.dataStore.isSoundOn, () => sounds.raise.play());
     } else {
       this.allInCalculation();
-      soundController(this.dataStore.isSoundOn, sounds["All-in"]);
+      soundController(this.dataStore.isSoundOn, () => sounds["All-in"].play());
       if (gameStore.maxBet < this.bet) gameStore.maxBet = this.bet;
     }
   }
