@@ -64,10 +64,10 @@ export class Game implements IGameStore {
       })
     reaction(
       () => this.formStore.isStarted && this.dataStore.assetsLoaded, // when assets/data are preloaded and button is pressed runs this code, which builds array of players.
-      async () => {
+      () => {
         this.addPlayers();
         this.blind();
-        await this.decision();
+        this.decision();
       }
     );
     reaction(

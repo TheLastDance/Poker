@@ -23,15 +23,14 @@ export function allFold(arr: (IBot | IPlayer)[]): boolean {
     return true;
   }
   return false;
-
-} // right now will not work on second round of bidding
+} // checks that everyone folded except last person.
 
 export function sameBids(arr: (IBot | IPlayer)[]): boolean {
   const filterByFold = arr.filter(item => item.turn !== fold && item.turn !== allIn);
   const same = filterByFold.every(item => item.bet === gameStore.maxBet);
 
   return same;
-}
+} // checks if everyone who still play have same bets.
 
 export function checkAllIns(arr: (IBot | IPlayer)[]): boolean {
   const filteredArr = arr.filter(item => item.turn !== fold && item.turn !== allIn);
@@ -65,7 +64,7 @@ export function giveBack(arr: (IBot | IPlayer)[], playersMaxBet: (IBot | IPlayer
     }
     return item;
   });
-}
+}// gives remaining from the raise back to the player who has placed it.
 
 export function showdownTime(arr: (IBot | IPlayer)[]): number {
   const quantity = arr.filter(item => item.turn !== fold).length;
@@ -78,7 +77,7 @@ export function showdownTime(arr: (IBot | IPlayer)[]): number {
   } else {
     return minTime;
   }
-} // this function will generate time for showdown stage where player will be able to check combinations of other players at the showdown.
+} // this function will generate time for showdown stage where player will be able to see/check combinations of other players at the showdown.
 // after this time showdown will be ended and winner will take a bank. Idea of this function is to give more time for showdown if there are more players on this stage.
 // if there are min quantity - 2, time will be 10sec, if other quantity - time will be increased by 2sec for each + 1player.
 
@@ -99,14 +98,14 @@ export function soundController(isOn: boolean, sound: () => number | Howl): void
 }
 
 export function checkCloseCards(hand: ICardsForPlay[]): boolean {
-  let soarted = hand.sort((a, b) => Number(b.value) - Number(a.value));
+  let soarted = [...hand].sort((a, b) => Number(b.value) - Number(a.value));
   let difference = Number(soarted[0].value) - Number(soarted[1].value);
 
   if (difference <= 3 && difference > 0) {
     return true
   }
   return false;
-}
+} // checks if cards are close by value to each other, so possible straight could happened.
 
 export function checkSumCards(hand: ICardsForPlay[]): number {
   const reduce = hand.reduce((accum, item) => accum + Number(item.value), 0);
@@ -125,8 +124,12 @@ export function checkSumCards(hand: ICardsForPlay[]): number {
     return 0.3;
   }
   return 0;
-}
+}// returns points which are used for hand power checker. Checks the power of hand by card values.
 
 export function checkSuitsCards(hand: ICardsForPlay[]): boolean {
   return hand.every(item => item.suit === hand[0].suit);
-}
+} // checks that pocket cards have the same suit
+
+export function isBoardComb(board: ICombination, arr: ICombination): boolean {
+  return JSON.stringify(board.bestHand) === JSON.stringify(arr.bestHand);
+} // checks if the combination was fully made from board cards.

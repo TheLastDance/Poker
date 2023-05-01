@@ -16,7 +16,7 @@ interface IProps {
 
 const Hand: React.FC<IProps> = observer((props) => {
   const { gameStore } = rootStore;
-  const { item, y, y2, scaleRatio, index } = props;
+  const { item, y, y2, scaleRatio } = props;
 
   const player = item instanceof Player;
   const exp = player && y >= 0 || gameStore.isShowDown && item.turn !== TurnsEnum.fold;
