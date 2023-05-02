@@ -12,8 +12,7 @@ root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
-  // <App />
-);
+); // if you cloned my repo and saw some warnings from preloading assets in console, it's because StrictMode is turned on.
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

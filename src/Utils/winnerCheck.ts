@@ -17,10 +17,8 @@ export const POKER_RANKINGS = {
 
 export function checkWinner(players: ICombination[]): ICombination[] {
   const arr = [...players].sort((a, b) => POKER_RANKINGS[b.combination] - POKER_RANKINGS[a.combination]); // sort by high combination
-  console.log(arr);
   let filterOnEqual = arr.filter(item => item.combination === arr[0].combination); // will leave only players with high combination
   const maxComb = filterOnEqual[0].combination;
-  console.log(filterOnEqual);
 
   const needKicker = [HighCard, OnePair, TwoPair, ThreeofaKind, FourofaKind, Flush];
 
@@ -41,7 +39,6 @@ export function checkWinner(players: ICombination[]): ICombination[] {
 function highHand(arr: ICombination[], option: "bestHand" | "fiveCards", index = 0) {
   const sortByHigh = [...arr].sort((a, b) => b[option][index].value - a[option][index].value);
   // sort by highest card in the hand by default, but we can use other index instead.
-  console.log(sortByHigh);
 
   let filterHigh = sortByHigh.filter(item => item[option][index].value === sortByHigh[0][option][index].value);
   // leaves only those players who have high hand, works perfectly for 5 card combination and sorting with 0 index

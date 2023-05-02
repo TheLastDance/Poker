@@ -10,17 +10,13 @@ import MainStage from './components/Pixi/Stage';
 const app = new Application();
 
 const App: React.FC = observer(() => {
-  const { formStore: { isStarted }, dataStore, gameStore } = rootStore;
+  const { formStore: { isStarted }, dataStore } = rootStore;
   const { dataStore: { fetch } } = rootStore;
 
   useEffect(() => {
     fetch();
     // eslint-disable-next-line
-  }, []);
-
-  console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);
-  console.log(gameStore.players);
-  console.log(dataStore.cardsForPlay);
+  }, []); // card deck data fetching and assets preloading on first render.
 
   return (
     <div className={!isStarted ? "App" : "App removeBackground"}>

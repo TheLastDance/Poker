@@ -15,7 +15,6 @@ interface IItem {
 
 const { allIn } = TurnsEnum;
 
-
 const Buttons: React.FC<IItem> = ({ item }) => {
   const { gameStore } = rootStore;
   const { gameStore: { handleCall, handleCheck, handleFold, handleAllIn } } = rootStore;

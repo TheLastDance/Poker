@@ -6,8 +6,9 @@ import PlayerList from './players/PlayersList';
 import Icons from './Icons';
 import Spinner from './Spinner';
 import rootStore from '../../mobX';
+import { observer } from 'mobx-react-lite';
 
-const MainStage: React.FC = () => {
+const MainStage: React.FC = observer(() => {
   const { dataStore } = rootStore;
   const [dimensions, setDimensions] = useState(window.innerHeight > window.innerWidth ? window.innerWidth : window.innerHeight);
   const [scaleRatio, setScaleRatio] = useState(1);
@@ -41,6 +42,6 @@ const MainStage: React.FC = () => {
 
     </Stage>
   );
-}
+})
 
 export default MainStage;

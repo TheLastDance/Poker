@@ -100,7 +100,6 @@ export class Game implements IGameStore {
     reaction(
       () => this.dataStore.handsCount,
       () => {
-        console.log("was handscount");
         this.clearPlayerStates();
         this.clearPlayerbetSum();
         this.blindRising(); // changed
@@ -154,7 +153,6 @@ export class Game implements IGameStore {
   private clearStoreStates() {
     this.bank = 0;
     this.round = pre_flop;
-    console.log("clear round", this.round);
     this.board = [];
     this.moneyWinners = [];
     this.maxBet = this.bigBlindCost;
@@ -217,7 +215,6 @@ export class Game implements IGameStore {
           if (stayedInGame.length > 0) winnerCalculations(checkWinner(stayedInGame));
         } else {
           this.moneyWinners = checkMoneyWinners(this.moneyWinners, player.id, this.bank);
-          console.log(this.moneyWinners);
 
           player.winner();
         }
@@ -291,7 +288,6 @@ export class Game implements IGameStore {
       this.circleIteration(index, "isMoving");
 
     } else {
-      console.log("was in makeMove", this.round);
       if (this.players.length === 2) {
         const indexBig = this.players.findIndex(item => item.bigBlind);
         this.players[indexBig].isMoving = true;
@@ -306,28 +302,22 @@ export class Game implements IGameStore {
     const winnerIndex = this.players.findIndex(item => item.turn !== fold);
     this.players[winnerIndex].winner();
     player.isMoving = false;
-    console.log(this.round);
     this.round = finish;
     this.dataStore.handsCount++;
-    console.log(this.round);
   }
 
   private async roundChange(player: IBot | IPlayer) {
     player.isMoving = false;
-    const rounds = [pre_flop, flop, turn, river, finish]; // should be enum istead of strings, to avoid typo.
+    const rounds = [pre_flop, flop, turn, river, finish];
     const indexOfCurrentRound = rounds.findIndex(item => item === this.round);
     runInAction(() => { this.round = rounds[indexOfCurrentRound + 1]; });
-    console.log("mainCheck");
 
 
     if (this.round === finish) {
-      console.log("was in isSame", this.round);
-      console.log("finish 1");
       const time = showdownTime(this.players);
       runInAction(() => { this.isShowDown = true });
       await new Promise(resolve => setTimeout(() => resolve(this.winnerChecking()), time));
 
-      console.log("finish 2");
       runInAction(() => { this.dataStore.handsCount++; }) // MAKE AS ACTION
     }
   }
@@ -337,15 +327,12 @@ export class Game implements IGameStore {
     let counter = 0;
     while (counter < this.players.length) {
       const index = this.players.findIndex(item => item.isMoving);
-      console.log(index);
       const player = this.players[index];
       const shouldMoveExp = player.bet !== this.maxBet || !player.turn; // if did not went returns true, or if current bet is not maxBet returns true.
       const allInChecker = checkAllIns(this.players); // need to do something with that func tomorrow
 
       if (allFold(this.players)) {
-        console.log("folded");
         const winnerIndex = this.players.findIndex(item => item.turn !== fold);
-        console.log(this.moneyWinners);
         await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 1000));
         this.moneyWinners.push({ id: this.players[winnerIndex].id, winningAmount: this.bank });
         return;
@@ -359,21 +346,17 @@ export class Game implements IGameStore {
 
       if (player.turn !== fold && player.turn !== allIn) {
         if (player.isBot && shouldMoveExp) {
-          await new Promise(resolve => setTimeout(() => resolve(player.ai()), 1500)); // react dont want to rerender when state is updated withour ticker.
-          //player.ai();
-          console.log(player.turn);
+          await new Promise(resolve => setTimeout(() => resolve(player.ai()), 1500));
           await new Promise(resolve => setTimeout(resolve, 1500));
         } // bot generates decision.
       }
 
-      if (allFold(this.players)) { // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
-        console.log("folded");
+      if (allFold(this.players)) {
         const winnerIndex = this.players.findIndex(item => item.turn !== fold);
-        console.log(this.moneyWinners);
         await new Promise(resolve => setTimeout(() => resolve(this.winnerByFold(player)), 1000));
         this.moneyWinners.push({ id: this.players[winnerIndex].id, winningAmount: this.bank });
         return;
-      }
+      } // if everyone folded, give bank to last person who remained, this function should be used before players move and also after.
       // because if bot is moving, we can check this after his turn, but we can't do same if real player moving, so thats why we also need to use this func above.
       // so if first move is real players move and he folded, we need to check that before bot's turn, in other way both will fold and we will have bug.
 
@@ -384,7 +367,6 @@ export class Game implements IGameStore {
             player.isMoving = false;
             runInAction(() => this.round = flop); // this will run this function again in reaction, so this block will be returned at the end.
           }
-          console.log("was in isSame", this.round);
           return;
         }
       }
@@ -396,11 +378,9 @@ export class Game implements IGameStore {
         const isSame = sameBids(this.players);
 
         if (isSame) {
-          console.log("was in isSame", this.round);
           if (player.turn) {
             this.roundChange(player);
           }
-          console.log("was returned");
           return;
         }
       } // same as above one, but works for next rounds where last decision maker will be dealer (button).
@@ -412,9 +392,7 @@ export class Game implements IGameStore {
       if (player.isBot || shouldRenderButtons) {
         this.changeArr(index);
         this.circleIteration(index, "isMoving");
-        console.log("263");
       } else {
-        console.log("269");
         return;
       } // should finish recursion if real player did not folded yet.
       counter++;
@@ -449,14 +427,13 @@ export class Game implements IGameStore {
     } else {
       this.players[bigBlindIndex - 2].isDiller = true;
     }
-  } // initializes who is dealer on first hand, need separate logic because on heads up dealer should be small blind, thats why we check length of the array.
+  } // initializes who is dealer on first hand, need separate logic because on heads up dealer should be - small blind, thats why we check length of the array.
 
   private rolesPos(type: 'smallBlind' | 'bigBlind' | 'isDiller') {
     const index = this.players.findIndex(item => item[type]);
     this.players[index][type] = false;
     this.circleIteration(index, type);
   } // initializes players on blinds from the second hand.
-  // SHOULD BE VERY CAREFUL HERE WHEN BOT WILL LOSE ALL HIS STACK AND BE DELETED FROM ARRAY(!!!).
 
   private deleteLoser() {
     const noLoser = this.players.every(item => item.stack >= this.bigBlindCost);
@@ -505,7 +482,7 @@ export class Game implements IGameStore {
     }
 
     this.deleteLoser(); // should be deleted
-  }
+  } // deletes player from the game if at the start of next round he has less than big blind, also his remaining stack will be placed to the bank for next round.
 
   private blind() {
     const firstHand = this.players.every(item => !item.bigBlind);
@@ -530,7 +507,7 @@ export class Game implements IGameStore {
 
     this.makeMove();
     this.updateRaise();
-  }
+  } // logic of blinds and them calculation.
 }
 
 const gameStore = new Game();

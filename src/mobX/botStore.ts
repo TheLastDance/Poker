@@ -63,7 +63,6 @@ export class Bot implements IBot {
     this.reRaiseQuantity = 1;
 
     if (this.turn !== fold && this.turn !== allIn || gameStore.round === finish) {
-      console.log("clear turn!!!");
       this.turn = false;
     }
   }
@@ -74,7 +73,6 @@ export class Bot implements IBot {
 
   winner(): void {
     this.stack += gameStore.bank;
-    console.log("winner");
   }
 
   winnerByLowAllIn(pot: number): void {
@@ -111,7 +109,6 @@ export class Bot implements IBot {
         const maxBetCoef = this.maxbetCoefCalculator(accumulator);
 
         const ratio = accumulator * this.bluffCoef * maxBetCoef;
-        console.log(accumulator, maxBetCoef, this.bluffCoef, ratio);
 
         this.decisionMaker(ratio);
       } else {
@@ -127,11 +124,10 @@ export class Bot implements IBot {
         if (this.reRaiseQuantity > 3) {
           ratio = 0.25 // forces to call after two reraises
         }
-        console.log(accumulator, maxBetCoef, this.bluffCoef, ratio);
         this.decisionMaker(ratio);
       }
     })
-  }
+  }// main ai method which uses some utility functions.
 
   handPowerCalculator(comb: ICombination): number {
     let accumulator = 0;
@@ -172,7 +168,6 @@ export class Bot implements IBot {
 
   maxbetCoefCalculator(acc: number): number {
     const averageBank = Number(this.formStore.playerBank) * (Number(this.formStore.opponents) + 1) / gameStore.players.length;
-    console.log(averageBank);
 
     let maxBetCoef = 1;
 
@@ -278,11 +273,12 @@ export class Bot implements IBot {
 
   async raiseCalculation(ratio: number): Promise<void> {
     const random = Math.floor(Math.random() * 3) + 1;
-    let raiseBet = Math.round((ratio + 1) * gameStore.maxBet * random); // multiples current maxbet by ratio + 1. So raises more if ratio is high and opposite.
+    let raiseBet = Math.round((ratio + 1) * gameStore.maxBet * random);
+    // multiples current maxbet by ratio + 1. So raises more if ratio is high and opposite.Also added random to make raises amount a little randomized.
 
     if (gameStore.maxBet === 0) {
-      raiseBet = Math.round((ratio + 1) * gameStore.bigBlindCost * random); // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
-    }
+      raiseBet = Math.round((ratio + 1) * gameStore.bigBlindCost * random);
+    }// mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
 
     if (raiseBet < this.stack) {
       if (this.turn === raise) {
