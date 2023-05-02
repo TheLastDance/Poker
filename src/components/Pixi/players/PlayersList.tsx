@@ -40,7 +40,7 @@ const PlayerList: React.FC<IAppSize> = observer((props) => {
       setY2(prev => prev - i * delta);
     }
 
-    if (!startCardsAnimation) {
+    if (!startCardsAnimation && speed > 0) {
       i = 0;
       setSpeed(0);
       setY(3000);

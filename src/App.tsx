@@ -11,10 +11,11 @@ const app = new Application();
 
 const App: React.FC = observer(() => {
   const { formStore: { isStarted }, dataStore, gameStore } = rootStore;
+  const { dataStore: { fetch } } = rootStore;
 
   useEffect(() => {
+    fetch();
     // eslint-disable-next-line
-    dataStore.fetch();
   }, []);
 
   console.log(gameStore.bank, gameStore.players[0]?.stack, gameStore.players[1]?.stack);

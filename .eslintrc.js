@@ -140,7 +140,6 @@ module.exports = {
     ],
     "@typescript-eslint/ban-tslint-comment": "error",
     "@typescript-eslint/ban-types": "warn",
-    "@typescript-eslint/consistent-indexed-object-style": ["warn", "record"],
     "@typescript-eslint/consistent-type-exports": [
       "warn",
       { fixMixedExportsWithInlineTypeSpecifier: true },

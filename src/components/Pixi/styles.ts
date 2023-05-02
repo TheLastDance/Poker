@@ -2,7 +2,7 @@ import { TextStyle } from 'pixi.js';
 import { Text } from 'pixi.js';
 import { FancyButton } from '@pixi/ui';
 
-export function buttonCreator(text: string, defaultView: string, pressedView: string, hoverView: string) {
+export function buttonCreator(text: string, defaultView: string, pressedView: string, hoverView: string): FancyButton {
   return new FancyButton({
     defaultView: defaultView,
     hoverView: hoverView,
@@ -37,7 +37,7 @@ export const name = new TextStyle({
   fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
   fontSize: 20,
   fontWeight: '600',
-  fill: '#D0CCC8', // gradient
+  fill: '#D0CCC8',
   stroke: '#000',
   dropShadow: true,
   dropShadowDistance: 3,
@@ -65,7 +65,7 @@ export const turnStyle = new TextStyle({
   fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
   fontSize: 24,
   fontWeight: '700',
-  fill: 'black', // gradient
+  fill: 'black',
   letterSpacing: 1,
 });
 
@@ -74,7 +74,7 @@ export const money = new TextStyle({
   fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
   fontSize: 23,
   fontWeight: '600',
-  fill: ['black'], // gradient
+  fill: ['black'],
   stroke: '16EE0A',
   strokeThickness: 2,
   letterSpacing: 1,
@@ -86,7 +86,7 @@ export const money2 = new TextStyle({
   fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
   fontSize: 18,
   fontWeight: '600',
-  fill: ['black'], // gradient
+  fill: ['black'],
   stroke: '16EE0A',
   strokeThickness: 2,
   letterSpacing: 3,
@@ -98,7 +98,7 @@ export const movingStyle = new TextStyle({
   fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
   fontSize: 25,
   fontWeight: '600',
-  fill: '#BF0606', // gradient
+  fill: '#BF0606',
   stroke: '#000',
   dropShadow: true,
   dropShadowDistance: 3,

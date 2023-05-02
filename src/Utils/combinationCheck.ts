@@ -1,14 +1,12 @@
-import { IHand, ICombination, valueNumber, CombinationEnum } from "../types";
+import { ICardsForPlay, ICombination, valueNumber, CombinationEnum } from "../types";
 
 const { RoyalFlush, HighCard, Flush, FullHouse, FourofaKind, ThreeofaKind, TwoPair, Straight, StraightFlush, OnePair } = CombinationEnum;
 
 // This function is going to take as an argument a concatenated array of players hand and a board + an id of player for easier calculations in game logic.
 // With this function we can check a combination at any time, at pre-flop, flop, turn or river. It will be useful for Bot AI.
-export function checkCombination(cards: IHand[], id: number, betSum: number): ICombination {
+export function checkCombination(cards: ICardsForPlay[], id: number, betSum: number): ICombination {
   const values = cards.map(card => ({ ...card, value: Number(card.value) })).sort((a, b) => b.value - a.value);
   const suits = [...values].sort((a, b) => a.suit === b.suit ? 0 : a.suit < b.suit ? -1 : 1); // should be used where we need check by suit (flush/straight flush)
-  // console.log(values)
-  // console.log(suits)
 
   // Check for Straight flush
   const isStarightFlush = checkStraightFlush(suits);
@@ -69,7 +67,7 @@ export function checkCombination(cards: IHand[], id: number, betSum: number): IC
   return { combination: HighCard, bestHand: isHighCard, fiveCards: fiveCards(isHighCard), id: id, betSum: betSum };
 }
 
-function checkIdentical<T extends keyof IHand>(arr: valueNumber[], option: T, num: number) {
+function checkIdentical<T extends keyof ICardsForPlay>(arr: valueNumber[], option: T, num: number) {
   let countSuits = [arr[0]];
 
   for (let i = 0; i < arr.length - 1; i++) {

@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction, reaction, action } from "mobx";
-import { ICardsForPlay, IDataStore, ICard } from "../types";
+import { ICardsForPlay, IDataStore, ICard, IFetchedDeck } from "../types";
 import { shuffle } from "../Utils/shuffleArray";
 import { Assets } from "pixi.js";
 import { assetsUrls, assetsNames } from "../data/assetsData";
@@ -28,6 +28,7 @@ class Data implements IDataStore {
     makeAutoObservable(this, {
       handleSound: action.bound,
       handleMusic: action.bound,
+      fetch: action.bound,
     });
     reaction(
       () => this.cards,
@@ -83,7 +84,7 @@ class Data implements IDataStore {
   } // value changing for api cards.
 
   onProgress = (progress: number): number => {
-    console.log("progress", progress);
+    //console.log("progress", progress);
     this.progress = progress;
     return progress;
   }
@@ -95,7 +96,7 @@ class Data implements IDataStore {
       await Assets.load("loader", () => runInAction(() => { this.startCanvasRender = true }));
 
       const response = await fetch('https://deckofcardsapi.com/api/deck/new/draw/?count=52');
-      const json = await response.json();
+      const json: IFetchedDeck = await response.json() as IFetchedDeck;
       runInAction(() => {
         this.cards = json.cards.map((item: ICard) => ({ value: this.changeValue(item.value), suit: item.suit, image: item.image }));
       });
@@ -113,6 +114,7 @@ class Data implements IDataStore {
       await Assets.load(arr, this.onProgress); // Preload all textures using pixiJS
 
     } catch (err) {
+      // eslint-disable-next-line
       console.log(err);
     } finally {
       runInAction(() => { this.assetsLoaded = true; });
@@ -125,7 +127,7 @@ class Data implements IDataStore {
 
   handIncrement() {
     this.handsCount = this.handsCount + 1;
-  } // will count played hands, for now need to test things and trigger changes by button.
+  } // will count played hands, for now need to test things and trigger changes by button. Don't need this method anymore, will delete soon.
 }
 
 const dataStore = new Data();

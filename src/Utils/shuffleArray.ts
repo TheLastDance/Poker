@@ -1,4 +1,3 @@
-// import { IHand } from "../types";
 import { ICardsForPlay } from "../types";
 
 export function shuffle(array: ICardsForPlay[]): ICardsForPlay[] {

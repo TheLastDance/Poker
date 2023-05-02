@@ -13,7 +13,7 @@ interface IProps {
 const Button: React.FC<IProps> = (props) => {
   const { text, defaultView, pressedView, hoverView, handleTurn } = props;
 
-  const Button = PixiComponent("Button", {
+  const PixiButton = PixiComponent("Button", {
     create: () => {
       const button = buttonCreator(text, defaultView, pressedView, hoverView);
       button.onPress.connect(() => handleTurn());
@@ -22,7 +22,7 @@ const Button: React.FC<IProps> = (props) => {
   });
 
   return (
-    <Button />
+    <PixiButton />
   );
 }
 

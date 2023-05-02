@@ -72,34 +72,34 @@ export class Game implements IGameStore {
     );
     reaction(
       () => this.round,
-      async (round) => {
+      (round) => {
         if (round === flop) {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 3);
           runInAction(() => this.boardAnimation = true);
           this.makeMove();
-          await this.decision(); // this working recursively when round changes
+          this.decision(); // this working recursively when round changes
         }
         else if (round === turn) {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 4);
           this.makeMove();
-          await this.decision();
+          this.decision();
         }
         else if (round === 'river') {
           this.maxBet = 0;
           this.clearPlayerStates();
           this.board = this.dataStore.cardsForPlay.slice(0, 5);
           this.makeMove();
-          await this.decision();
+          this.decision();
         }
       }, { delay: 1500 }
     );
     reaction(
       () => this.dataStore.handsCount,
-      async () => {
+      () => {
         console.log("was handscount");
         this.clearPlayerStates();
         this.clearPlayerbetSum();
@@ -107,16 +107,16 @@ export class Game implements IGameStore {
         this.clearStoreStates();
         this.blind();
         this.cardDistribution();
-        if (!this.isGameOver) await this.decision();
+        if (!this.isGameOver) this.decision();
       }, { delay: 2000 }
     );
   }
 
-  async handleCall() {
+  handleCall(): void {
     this.players = handleTurn(this.players, call);
     const player = this.players[0];
     if (player instanceof Player) player.playerCallCalculation();
-    await this.decision();
+    this.decision();
   }
 
   handleFold(): void {
@@ -149,7 +149,7 @@ export class Game implements IGameStore {
       this.players = handleTurn(this.players, allIn);
     }
     this.decision();
-  } // for raise opportunity, will make soon, for now we are able just to call/fold and check.
+  } // for raise opportunity
 
   private clearStoreStates() {
     this.bank = 0;

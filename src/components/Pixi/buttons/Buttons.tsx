@@ -5,7 +5,7 @@ import btn_red from "../../../assets/btn_red.png";
 import btn_black from "../../../assets/btn_black.png";
 import btn_orange from "../../../assets/btn_orange.png";
 import btn_blue from "../../../assets/btn_blue.png";
-import { Container, Text, } from "@pixi/react";
+import { Container } from "@pixi/react";
 import InputRange from "./InputRange";
 import Button from "./Button";
 

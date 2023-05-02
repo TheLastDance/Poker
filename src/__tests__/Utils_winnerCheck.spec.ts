@@ -1,3 +1,6 @@
+//@ts-nocheck
+// need no check, because tests were implemented much earlier than I changed type in these functions, but still don't need other properties for this test, they work fine.
+
 import { checkWinner } from "../Utils/winnerCheck";
 import { checkCombination } from "../Utils/combinationCheck";
 
@@ -163,7 +166,7 @@ let TEST_8_PLAYER_2 = [
   { value: "3", suit: 'DIAMONDS' },
 ]
 
-describe("Testing combinations", () => {
+describe("Testing winner checker", () => {
 
   it("split pot with kicker on a board (two pairs)", () => {
     let players = [checkCombination(TEST_1_PLAYER_1, 0, 0), checkCombination(TEST_1_PLAYER_2, 1, 0), checkCombination(TEST_1_PLAYER_3, 2, 0)];

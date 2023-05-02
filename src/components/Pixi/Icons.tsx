@@ -11,8 +11,7 @@ import cards_rules from "../../assets/cards-rules.png";
 import rules from "../../assets/rules.jpg";
 
 const Icons: React.FC<IAppSize> = observer((props) => {
-  const { dataStore } = rootStore;
-  const { isMusicOn, isSoundOn, handleSound, handleMusic } = dataStore;
+  const { dataStore: { isMusicOn, isSoundOn, handleSound, handleMusic } } = rootStore;
   const { size, scaleRatio } = props;
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [x, setX] = useState(-250);

@@ -120,7 +120,13 @@ export class Bot implements IBot {
         }
         const maxBetCoef = this.maxbetCoefCalculator(accumulator);
         const combCoef = this.combPowerCalculator(postFlopComb);
-        const ratio = (accumulator * this.bluffCoef * maxBetCoef) + (combCoef * this.bluffCoef);
+        let ratio = (accumulator * this.bluffCoef * maxBetCoef) + combCoef;
+        if (combCoef > 0) {
+          ratio = (accumulator * this.bluffCoef * maxBetCoef) + (combCoef * this.bluffCoef);
+        }
+        if (this.reRaiseQuantity > 3) {
+          ratio = 0.25 // forces to call after two reraises
+        }
         console.log(accumulator, maxBetCoef, this.bluffCoef, ratio);
         this.decisionMaker(ratio);
       }
@@ -157,7 +163,7 @@ export class Bot implements IBot {
       return -(round_multiplier[gameStore.round] * 0.1);
     } else { // no combination from board
       if (POKER_RANKINGS[comb.combination] > 0) {
-        return POKER_RANKINGS[comb.combination] * 0.1; // will return combination value multiplied by 0.1, the higher combination - higher points for possible raise/call.
+        return POKER_RANKINGS[comb.combination] * 0.15; // will return combination value multiplied by 0.15, the higher combination - higher points for possible raise/call.
       } else {
         return -(round_multiplier[gameStore.round] * 0.1); // high card combination will reduce points for possible raise/call, so fold possibility increases.
       }
@@ -187,11 +193,11 @@ export class Bot implements IBot {
       } else {
         maxBetCoef -= 0.1;
       }// if your stack is only 35% or less than average stack on table per player.
-      if (acc > 0.5) {
+      if (acc > 0.4) {
         maxBetCoef += 0.2;
       } else {
         maxBetCoef -= 0.2;
-      } // if your hand coef is more than 0.35
+      } // if your hand coef is more than 0.4
     } else {
       if (this.stack / averageBank < 0.35) {
         maxBetCoef += 0.1;
@@ -202,16 +208,18 @@ export class Bot implements IBot {
         maxBetCoef -= 0.2;
       } else {
         maxBetCoef += 0.2;
-      } // if someone raises more than 40% of your stack.
+      } // if someone raises more than 30% of your stack.
       if (acc > 0.35) {
         maxBetCoef += 0.2;
       } else {
         maxBetCoef -= 0.2;
       } // if your hand coef is more than 0.35
+      if (gameStore.maxBet < averageBank / 10 && gameStore.maxBet !== gameStore.bigBlindCost) {
+        maxBetCoef += 0.15;
+      } // forces bot to make call if the bet is too small.
+
       const isLowest = maxBetCoef - (0.2 * this.reRaiseQuantity);
       if (this.turn === raise && isLowest > 0.2 || this.reRaiseQuantity > 1 && isLowest > 0.2) {
-        console.log("reRaise", maxBetCoef);
-
         maxBetCoef -= (0.2 * this.reRaiseQuantity);
         this.reRaiseQuantity += 1;
       } // if previous turn was raise
@@ -269,10 +277,11 @@ export class Bot implements IBot {
   }
 
   async raiseCalculation(ratio: number): Promise<void> {
-    let raiseBet = (ratio + 1) * gameStore.maxBet; // multiples current maxbet by ratio + 1. So raises more if ratio is high and opposite.
+    const random = Math.floor(Math.random() * 3) + 1;
+    let raiseBet = Math.round((ratio + 1) * gameStore.maxBet * random); // multiples current maxbet by ratio + 1. So raises more if ratio is high and opposite.
 
     if (gameStore.maxBet === 0) {
-      raiseBet = (ratio + 1) * gameStore.bigBlindCost; // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
+      raiseBet = Math.round((ratio + 1) * gameStore.bigBlindCost * random); // mostly this will be needed when maxBet could be cleared (flop,turn,river stages), so we need to use something different than 0.
     }
 
     if (raiseBet < this.stack) {

@@ -1,3 +1,6 @@
+// @ts-nocheck
+// need no check, because tests were implemented much earlier than I changed type in this function, but still don't need other properties for this test, they work fine.
+
 import { checkCombination } from "../Utils/combinationCheck";
 
 let test1 = [

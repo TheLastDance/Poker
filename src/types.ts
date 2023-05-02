@@ -12,12 +12,6 @@ export interface IBotInfo {
   avatar: string;
 }
 
-export interface IHand {
-  value: string;
-  suit: string;
-  image: string;
-} // type for testing, will remove in future I think.
-
 export interface ICombination {
   combination: CombinationEnum;
   bestHand: valueNumber[];
@@ -31,7 +25,7 @@ export interface IMoneyWinners {
   winningAmount: number;
 }
 
-export type valueNumber = Omit<IHand, "value"> & { value: number; };
+export type valueNumber = Omit<ICardsForPlay, "value"> & { value: number; };
 
 export enum TurnsEnum {
   fold = "fold",
@@ -84,8 +78,11 @@ export interface IDataStore {
   cardsForPlay: ICardsForPlay[];
   handsCount: number;
   assetsLoaded: boolean;
+  progress: number;
+  startCanvasRender: boolean;
   isSoundOn: boolean;
   isMusicOn: boolean;
+  startCardsAnimation: boolean;
   selectCards(): ICardsForPlay[];
   onProgress(progress: number): number;
   fetch(): void;
@@ -117,7 +114,6 @@ export interface IBot {
   turn: TurnsEnum | false;
   isBot: boolean;
   id: number;
-  //turnAnimation: boolean;
   dataStore: IDataStore;
   formStore: IFormStore;
   clearSumOfBets: () => void;
@@ -149,8 +145,31 @@ export interface IGameStore {
   bank: number;
   round: string;
   maxBet: number;
+  playerRaiseAmount: number;
+  board: ICardsForPlay[];
+  isGameOver: boolean;
   isShowDown: boolean;
+  moneyWinners: IMoneyWinners[];
+  boardAnimation: boolean;
   formStore: IFormStore;
   dataStore: IDataStore;
 }
+
+export interface IFetchedDeck {
+  success: boolean;
+  deck_id: string;
+  cards:
+  {
+    code: string;
+    image: string;
+    images: {
+      svg: string;
+      png: string;
+    };
+    value: string;
+    suit: string;
+  }[];
+  remaining: number;
+}
+
 

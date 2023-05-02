@@ -43,9 +43,16 @@ const Board: React.FC<IAppSize> = observer((props) => {
         y={!board.length ? -50 * scaleRatio : -100 * scaleRatio}
         scale={0.8 * scaleRatio}
       >
+        {gameStore.isGameOver &&
+          <Text
+            text={"Game Over"}
+            anchor={[0.5]}
+            style={style}
+          />
+        }
         {textArray.map((item, index) =>
           <Text
-            key={index}
+            key={item}
             text={item}
             anchor={[0.5]}
             style={style}
@@ -64,7 +71,7 @@ const Board: React.FC<IAppSize> = observer((props) => {
       >
         {board.map((item, index) =>
           <Sprite
-            key={index}
+            key={`${item.value}-${item.suit}`}
             image={item.image}
             anchor={[0, 0.5]}
             x={x <= index * cardDistance && index < 3 ? x : cardDistance * index}
