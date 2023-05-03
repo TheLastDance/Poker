@@ -1,6 +1,7 @@
 # Texas Hold'em Poker
 
 This game have all the classic rules of Texas Hold'em and was implemented during Evolution Typescript Course.
+All the game logic was written by me, no other libraries was used for it.
 
 ## Tech Stack
 
