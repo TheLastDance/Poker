@@ -41,14 +41,16 @@ This game have all the classic rules of Texas Hold'em and was implemented during
 
 
 ### Tricky poker rules/logic moments videos of game and them explanation
-1. [https://www.youtube.com/watch?v=wUrnj26QieU](video 1)
+1. [video 1](https://www.youtube.com/watch?v=wUrnj26QieU)
+
 As you see here small all-in has the best combination so he is able to take maximum the same amount of his bet from everyone and other part of bank will be
 taken by Bot-Bella because she has higher combination than me (Michel Morgan). Also after showdown you will see animation of winning amount of winners. 12 for
 Bella as remaining bank and other huge part for low all-in winner Edward. This animation will work also if there will be split pot, more than one winner and other cases. 
 And pay attention on showdown timings,if at the showdown we have only 2 players we will have 10 second to see other hands and combinations and if we have more players at showdown 
 this timing will rise by 2seconds for each +1 player.Maximum could be 20 sec.
 ____________________________________________________________
-2. [https://www.youtube.com/watch?v=fpri1qP_Gpc](video 2)
+2. [video 2](https://www.youtube.com/watch?v=fpri1qP_Gpc)
+
 Here firstly we can see the eliminating process from the table, so if players stack after hand is less than big blind
 this player will be eliminated. And if he had some small remaining in the stack, this money will be placed into a bank for next hand.
 And how you see after the elimination of real player(Michel Morgan) - game still continues and we can spectate how bots are playing.
@@ -56,13 +58,15 @@ Also now we have hands-up poker situation where only two players are playing, so
 So heads-up and blinds logic also works well after eliminating. And in the end of the video you could see when the game is over, so last player has 400$ stack, it means that
 calculations also work well.
 ____________________________________________________________
-3. [https://www.youtube.com/watch?v=WbaGTc0qwQs](video 3)
+3. [video 3](https://www.youtube.com/watch?v=WbaGTc0qwQs)
+
 Here you will see all-in bets for three players, with not equal amounts. So I placed max all-in with 229 and it means that in any case the remaining will be returned to my stack.
 Also Mark goes all-in with 73 and Bot-Travis with 98. In the end you can see that the smallest all-in won, so he can take maximum only the size of his bet from all players, thats why he won
 only a part of bank which is 222 and other part of bank was played between me and Travis, and this part is only something around 50$, 
 thats because extra amount of placed bet should be returned to me in any case.
 _________________________________________________________
-4. [https://www.youtube.com/watch?v=HOghjdmsnjk](video 4)
+4. [video 4](https://www.youtube.com/watch?v=HOghjdmsnjk)
+
 Split-pot logic between not equal all-ins also was implemented.
 So here Bot-Travis will place 25$ and then fold, me and Bot-Bella will go all-in and Nelson will call my bet. How you see Bella will have low all-in. So in the end everyone will take their 
 stack from the beginning of the hand and 25$ which was Travis bet will be splitted by the percentage of bets. So because Bella has a little bit lower bet, she will take less from this money,
